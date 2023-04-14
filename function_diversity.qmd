@@ -1,0 +1,189 @@
+---
+title: "functional_diversity"
+format: 
+  html:
+    self-contained: false
+    code-fold: true
+editor: source
+theme: minty
+keep-md: true
+execute:
+  warning: false
+  message : false
+toc: true
+toc-title: Sections
+toc-location: left
+---
+
+```{r}
+#| echo: false
+
+# Library
+library(tidyr)
+library(dplyr)
+```
+
+## Species selection
+
+- Select species with at least 5 individuals in data set between 2002 and 2022
+
+- Selection of species with  highest biomass 
+```{r}
+#| echo: false
+#| label: data_preparation_sp_list
+
+#### Species to measure morpho data ####
+# EVHOE 2002-2019 ----
+data2002_2019 <- utils::read.csv(here::here("data","raw-data", "data_evhoe_catch_2002_2019.csv"), sep = ";", header = T,dec = ".")
+data2002_2019[is.na(data2002_2019)] <- 0
+
+# EVHOE data 2021 ----
+data2021 <- utils::read.csv(here::here("data","raw-data", "data_evhoe_catch_2021.csv"), sep = ";", header = T, dec = ".")
+data2021[is.na(data2021)] <- 0
+
+# Sum abundance and biomass by species for 2021
+data_2021_sum <- data2021 %>%
+  group_by(Nom_Scientifique) %>%
+  #Number of individuals by species 
+  mutate(abundance=sum(Nbr))%>%
+  select(Nom_Scientifique, Tot_V_HV, abundance)%>% 
+  # select only distinct rows
+  distinct() %>%
+  #Sum abundance by species
+  group_by(Nom_Scientifique)%>%
+  mutate(biomasse=sum(Tot_V_HV))%>%
+  select(-Tot_V_HV)%>%
+  distinct()
+
+# EVHOE 2022 ----
+data2022 <- utils::read.csv(here::here("data","raw-data", "data_evhoe_catch_2022.csv"), sep = ";", header = T, dec = ".")
+data2022[is.na(data2022)] <- 0
+
+# Sum abundance and biomass by species for 2022
+data_2022_sum <- data2022 %>%
+  group_by(Nom_Scientifique) %>%
+  #Number of individuals by species 
+  mutate(abundance=sum(Nbr))%>%
+  select(Nom_Scientifique, Tot_V_HV, abundance)%>% 
+  # select only distinct rows
+  distinct() %>%
+  #Sum abundance by species
+  group_by(Nom_Scientifique)%>%
+  mutate(biomasse=sum(Tot_V_HV))%>%
+  select(-Tot_V_HV)%>%
+  distinct()
+
+## Sum all years 
+catch_data_evhoe <- rbind(data2002_2019, data_2021_sum, data_2022_sum)
+catch_data_evhoe_complete <-
+  catch_data_evhoe%>%
+  group_by(Nom_Scientifique)%>%
+  mutate(abundance_all=sum(abundance))%>%
+  mutate(biomasse_all=sum(biomasse))%>%
+  select(-c(abundance, biomasse))%>%
+  distinct()
+
+## Selection of species with at least 5 individuals 
+sp_selection <- catch_data_evhoe_complete%>%
+  filter(abundance_all >=5)%>%
+  #Delete when only genus data 
+  filter(!Nom_Scientifique %in% c("Nansenia", "Lampanyctus", "Myctophidae", "Platytroctidae"))
+
+# Order by biomass
+sp_selection <- arrange(sp_selection, desc(biomasse_all))
+
+DT::datatable(sp_selection)
+```
+
+```{r}
+#| echo: false
+
+#### Species - Station matrix  ####
+# EVHOE data 2021 ----
+# Sum abundance and biomass by species for 2021
+data_2021_mat <- data2021 %>%
+  group_by(Nom_Scientifique, Code_Station) %>%
+  #Number of individuals by species 
+  mutate(abundance=sum(Nbr))%>%
+  select(Code_Station, Nom_Scientifique, abundance)%>%
+  distinct()%>%
+  arrange(Nom_Scientifique)%>% 
+  pivot_wider(names_from = Nom_Scientifique, values_from = abundance)%>%
+  replace(is.na(.), 0)
+
+# EVHOE data 2022 ----
+# Sum abundance and biomass by species for 2021
+data_2022_mat <- data2022 %>%
+  group_by(Nom_Scientifique, Code_Station) %>%
+  #Number of individuals by species 
+  mutate(abundance=sum(Nbr))%>%
+  select(Code_Station, Nom_Scientifique, abundance)%>%
+  distinct()%>%
+  arrange(Nom_Scientifique)%>% 
+  pivot_wider(names_from = Nom_Scientifique, values_from = abundance)%>%
+  replace(is.na(.), 0)
+
+
+#### Species - Station matrix  ####
+# EVHOE data 2021 ----
+# Sum abundance and biomass by species for 2021
+data_2021_mat <- data2021 %>%
+  group_by(Nom_Scientifique, Code_Station) %>%
+  #Number of individuals by species 
+  mutate(abundance=sum(Nbr))%>%
+  select(Code_Station, Nom_Scientifique, abundance)%>%
+  distinct()%>%
+  pivot_wider(names_from = Nom_Scientifique, values_from = abundance)
+
+# EVHOE data 2022 ----
+# Sum abundance and biomass by species for 2021
+data_2022_mat <- data2022 %>%
+  group_by(Nom_Scientifique, Code_Station) %>%
+  #Number of individuals by species 
+  mutate(abundance=sum(Nbr))%>%
+  select(Code_Station, Nom_Scientifique, abundance)%>%
+  distinct()%>% 
+  pivot_wider(names_from = Nom_Scientifique, values_from = abundance)
+
+# EVHOE 2002-2019 ----
+data2002_2019 <- utils::read.csv(here::here("data","raw-data", "matrix_catch_2002_2019.csv"), sep = ";", header = T, check.names=FALSE)
+
+# Merge all data 
+matrix_sp_station <- do.call("rbind", list(data_2021_mat, data_2022_mat,data2002_2019))%>% 
+  replace(is.na(.), 0)
+```
+
+## Morphometric data
+```{r}
+#| echo: false
+#| label: morpho_data
+#| warning: false
+
+morphometric_data <- utils::read.csv(here::here("data","raw-data", "morphometrics_data.csv"), sep = ";", header = T, dec = ".")
+
+morpho_data <- morphometric_data%>%
+  select(-c(variable_abbreviation, variable_unit))%>%
+  t()%>%
+  as.data.frame()%>%
+  janitor::row_to_names(row_number = 1)%>%
+  `rownames<-`(NULL)
+  
+```
+
+### Number of individuals measured per species
+
+- total measure = 258
+-  total of species measured = 26
+```{r}
+#| echo: false
+#| label: summary_data
+#| warning: false
+
+morpho_data_summary <- morpho_data%>%
+  group_by(species)%>%
+  count(species)
+
+DT::datatable(morpho_data_summary)
+
+```
+
