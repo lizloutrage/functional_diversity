@@ -61,8 +61,6 @@ morpho_data[, 4:23] <- sapply(morpho_data[, 4:23], as.numeric)
 
 ### summary
 
-- total measure = 359
--  total of species measured = 32
 ```{r}
 #| echo: true
 #| label: summary_data
@@ -74,7 +72,6 @@ morpho_data_summary <-morpho_data %>%
 
 htmltools::tagList(DT::datatable(morpho_data_summary))
 ```
-
 
 ## Species * traits
 ### data imputation  
@@ -150,7 +147,6 @@ morpho_numeric <- completed_data %>%
 
 # categorial traits for species without NA
 cat_morpho <- morpho_data %>%
-  na.omit() %>%
   select(
     species,
     photophores_ventral_position ,
@@ -165,6 +161,7 @@ cat_morpho <- morpho_data %>%
     gill_raker_types,
     oral_gape_axis
   ) %>%
+    na.omit() %>%
   distinct() %>%
   arrange(species)
 
@@ -196,12 +193,10 @@ htmltools::tagList(DT::datatable(fish_traits))
 #| label: sp_depth_mt
 #| warning: false
 
-# species x assemblages (depth) matrix
-
 # list of species 
 sp_names <- c(rownames(fish_traits), "Nannobrachium_atrum", "Cyclothone")
 
-# species biomass x depth  matrix 2002-2019
+# species biomass x depth  matrix 2002-2019 ----
 data_biomass_2002_2019 <- utils::read.csv(here::here("data", "data_biomass_2002_2019.csv"), sep = ";", header = T, dec = ".")%>%
   replace(is.na(.), 0)%>%
   as.data.frame()%>%
@@ -216,22 +211,22 @@ data_biomass_2002_2019 <- utils::read.csv(here::here("data", "data_biomass_2002_
   tidyr::pivot_longer(!Code_Station, names_to = "species", values_to = "Tot_V_HV")%>%
   rename("Nom_Scientifique"="species")
 
-# species biomass x depth  matrix 2021
+# species biomass x depth  matrix 2021 ----
 data_biomass_2021 <- utils::read.csv(here::here("data", "data_evhoe_catch_2021.csv"), sep = ";", header = T, dec = ".")%>%
   select(Nom_Scientifique, Tot_V_HV, Code_Station)%>%
   distinct()%>%
   mutate(Nom_Scientifique= gsub(" ","_",Nom_Scientifique))%>%
   filter(Nom_Scientifique%in%sp_names)
 
-# species biomass x depth  matrix 2022
+# species biomass x depth  matrix 2022 ----
 data_biomass_2022 <- utils::read.csv(here::here("data", "data_evhoe_catch_2022.csv"), sep = ";", header = T, dec = ".")%>%
   select(Nom_Scientifique, Tot_V_HV, Code_Station)%>%
   distinct()%>%
   mutate(Nom_Scientifique= gsub(" ","_",Nom_Scientifique))%>%
   filter(Nom_Scientifique%in%sp_names)
 
-# merge all matrix 
-# depht of all stations 
+# merge all matrix ----
+# depth of all stations 
 depth_station <- utils::read.csv(here::here("data", "depth.csv"), sep = ";", header = T, dec = ".")%>%
   rename("Code_Station"="Station")
 
@@ -337,7 +332,7 @@ round(sp_dist_fish, 3)
 ## 2.3 Building functional spaces and chosing the best one
 ### 2.3.1 Computing several multimensional functional spaces and assessing their quality
 
--mFD evaluates the quality of PCoA-based multidimensional spaces according to the deviation between trait-based distances and distances in the functional space (extension of Maire et al. (2015) framework). 
+- mFD evaluates the quality of PCoA-based multidimensional spaces according to the deviation between trait-based distances and distances in the functional space (extension of Maire et al. (2015) framework). 
 
 ```{r}
 #| echo: true
@@ -365,8 +360,8 @@ The space with the best quality has the lowest quality metric. 5-D space good ?
 #| label: fspaces_quality_plot
 #| warning: false
 #| message: false
-#| fig-width: 14
-#| fig-height: 11
+#| fig-width: 13
+#| fig-height: 10
 
 mFD::quality.fspaces.plot(
   fspaces_quality            = fspaces_quality_fish,
@@ -399,7 +394,11 @@ sp_faxes_coord_fish <- fspaces_quality_fish$"details_fspaces"$"sp_pc_coord"
 
 # fish_tr_faxes <- mFD::traits.faxes.cor(
 #   sp_tr          = fish_traits, 
-#   sp_faxes_coord = sp_faxes_coord_fish[ , c("PC1", "PC2", "PC3", "PC4")])
+#   sp_faxes_coord = sp_faxes_coord_fish[ , c("PC1", "PC2", "PC3", "PC4")], 
+#   plot           = F)
+# 
+# ## Print traits with significant effect ----
+# fish_tr_faxes$"tr_faxes_stat"[which(fish_tr_faxes$"tr_faxes_stat"$"p.value" < 0.05), ]
 
 ```
 
@@ -409,23 +408,156 @@ sp_faxes_coord_fish <- fspaces_quality_fish$"details_fspaces"$"sp_pc_coord"
 #| label: plot_functional_space
 #| warning: false
 #| message: false
-sp_faxes_coord_fish <- fspaces_quality_fish$"details_fspaces"$"sp_pc_coord"
 
-big_plot <- mFD::funct.space.plot(
-  sp_faxes_coord  = sp_faxes_coord_fish[ , c("PC1", "PC2", "PC3", "PC4")],
-  faxes           = c("PC1", "PC2", "PC3", "PC4"),
-  name_file       = NULL,
-  faxes_nm        = NULL,
-  range_faxes     = c(NA, NA),
-  plot_ch         = TRUE,
-  plot_vertices   = TRUE,
-  plot_sp_nm      = NULL,
-  check_input     = TRUE)
-
-big_plot$"patchwork"
+#sp_faxes_coord_fish <- fspaces_quality_fish$"details_fspaces"$"sp_pc_coord"
+# 
+# big_plot <- mFD::funct.space.plot(
+#   sp_faxes_coord  = sp_faxes_coord_fish[ , c("PC1", "PC2", "PC3", "PC4")],
+#   faxes           = c("PC1", "PC2", "PC3", "PC4"),
+#   name_file       = NULL,
+#   faxes_nm        = NULL,
+#   range_faxes     = c(NA, NA),
+#   plot_ch         = TRUE,
+#   plot_vertices   = TRUE,
+#   plot_sp_nm      = NULL,
+#   check_input     = TRUE)
+# 
+# big_plot$"patchwork"
 ```
 
-# 3. Computing and plotting beta FD indices
+# 3. Computing and plotting FD indices using the mFD package
+
+## 3.1 Computing and plotting alpha FD indices
+
+```{r}
+#| echo: true
+#| label: compute_alpha_FD
+#| warning: false
+#| message: false
+
+alpha_fd_indices_fish <- mFD::alpha.fd.multidim(
+  sp_faxes_coord   = sp_faxes_coord_fish[ , c("PC1", "PC2", "PC3", "PC4")],
+  asb_sp_w         = depth_fish_biomass,
+  ind_vect         = c("fdis", "fric", "fdiv", 
+                       "fspe", "fide"),
+  scaling          = TRUE,
+  check_input      = TRUE,
+  details_returned = TRUE)
+
+```
+
+The function has two main outputs:
+
++ a data.frame gathering indices values in each assemblage (for FIde values, there are as many columns as there are axes to the studied functional space).
+
+```{r}
+#| echo: true
+#| label: fd_ind_values_fish
+#| warning: false
+#| message: false
+
+fd_ind_values_fish <- alpha_fd_indices_fish$"functional_diversity_indices"
+htmltools::tagList(DT::datatable(fd_ind_values_fish))
+```
+
++ a details list of data.frames and lists gathering information such as coordinates of centroids, distances and identity of the nearest neighbour, distances to the centroid, etc. The user does not have to directly use it but it will be useful if FD indices are then plotted. It can be retrieved through:
+
+```{r}
+details_list_fish <- alpha_fd_indices_fish$"details"
+```
+
+```{r}
+#| echo: true
+#| label: plots_alpha
+#| warning: false
+#| message: false
+
+plots_alpha <- mFD::alpha.multidim.plot(
+  output_alpha_fd_multidim = alpha_fd_indices_fish,
+  plot_asb_nm              = c("Epipelagic", "Bathypelagic"),
+  ind_nm                   = c("fdis", "fric", "fdiv", 
+                              "fspe", "fide"),
+  faxes                    = NULL,
+  faxes_nm                 = NULL,
+  range_faxes              = c(NA, NA),
+  plot_sp_nm               = NULL,
+  save_file                = FALSE,
+  check_input              = TRUE) 
+```
+
+### __FRic Functional Richness__
+
+- the proportion of functional space filled by species of the studied assemblage, i.e. the volume inside the convex-hull shaping species. To compute FRic the number of species must be at least higher than the number of functional axis + 1.
+```{r}
+#| echo: true
+#| label: plot_FRic
+#| warning: false
+#| message: false
+#| fig-width: 11
+#| fig-height: 11
+
+plots_alpha$"fric"$"patchwork"
+```
+
+### __FDiv Functional Divergence__
+
+- the proportion of the biomass supported by the species with the most extreme functional traits i.e. the ones located close to the edge of the convex-hull filled by the assemblage
+```{r}
+#| echo: true
+#| label: plot_FDiv
+#| warning: false
+#| message: false
+#| fig-width: 11
+#| fig-height: 11
+
+plots_alpha$"fdiv"$"patchwork"
+```
+
+### __FSpe Functional Specialization__
+
+- the biomass weighted mean distance to the mean position of species from the global pool (present in all assemblages).
+```{r}
+#| echo: true
+#| label: plot_FSpe
+#| warning: false
+#| message: false
+#| fig-width: 11
+#| fig-height: 11
+
+plots_alpha$"fspe"$"patchwork"
+```
+
+### __FDis Functional Dispersion__
+
+- the biomass weighted deviation of species traits values from the center of the functional space filled by the assemblage i.e. the biomass-weighted mean distance to the biomass-weighted mean trait values of the assemblage.
+
+```{r}
+#| echo: true
+#| label: plot_FDis
+#| warning: false
+#| message: false
+#| fig-width: 11
+#| fig-height: 11
+
+plots_alpha$"fdis"$"patchwork"
+```
+
+### __FIde Functional Identity__
+- the mean traits values for the assemblage. FIde is always computed when FDis is computed.
+
+```{r}
+#| echo: true
+#| label: plot_FIde
+#| warning: false
+#| message: false
+#| fig-width: 11
+#| fig-height: 11
+
+plots_alpha$"fide"$"patchwork"
+```
+
+
+## 3.2.Computing and plotting beta FD indices
 
 - The function returns a list containing:
 + a dist object with beta indices values for each pair of assemblages:
@@ -735,9 +867,10 @@ patchwork::wrap_plots(plot_reg_distinctiveness, plot_reg_uniqueness)
 - One idea to keep in mind is that averaging functional distinctiveness per community is exactly equal to computing functional dispersion. Functional originality is computed on a species basis, so we should be aware that if we are rather interested by community properties than we can compute functional diversity metrics which are much more appropriate.
 
 ```{r}
-local_di_ap <- as.data.frame(sp_local_di[, c(1, 11)])
+local_di_ap <- as.data.frame(sp_local_di[, c(1: 11)])
 local_di_ap$depth <- rownames(local_di_ap)
 ```
+
 ### 4.3.2. Plotting rarity
  - __Functional Distinctiveness__
 ```{r}
@@ -780,6 +913,7 @@ plot_ui_ri_reg
 
 - plot local scale measurements:
 
+__bathypelagic layer__
 ```{r}
 #| echo: true
 #| label: sp_local_di_si
@@ -787,15 +921,15 @@ plot_ui_ri_reg
 #| message: false
 
 sp_local_di_df <- funrar::matrix_to_stack(
-  sp_local_di, value_col = "local_di", row_to_col = "basket",
+  sp_local_di, value_col = "local_di", row_to_col = "depth",
   col_to_col = "species"
 )
 sp_local_si_df <- funrar::matrix_to_stack(
-  si, value_col = "local_si", row_to_col = "basket", col_to_col = "species"
+  si, value_col = "local_si", row_to_col = "depth", col_to_col = "species"
 )
 
 sp_local_di_si <- merge(
-  sp_local_di_df, sp_local_si_df, by = c("basket", "species")
+  sp_local_di_df, sp_local_si_df, by = c("depth", "species")
 )
 
 head(sp_local_di_si)

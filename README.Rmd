@@ -17,19 +17,17 @@ Here is an overview of `trophic_ecology_mesopelagic` content:
 -  [`data/`](https://github.com/lizloutrage/functional_diversity/tree/main/data):
 contains all raw data required to perform analyses
 
--  [`R/`](https://github.com/lizloutrage/trophic_ecology_mesopelagic/tree/main/R):
-  contains the functions to run the analysis  
 
--  [`index.qmd`](https://github.com/lizloutrage/trophic_ecology_mesopelagic/tree/main/index.qmd):
+-  [`index.qmd`](https://github.com/lizloutrage/functional_diversity/tree/main/index.qmd):
   contains the final report to be knitted with the code to carry out the analysis
   
 
--  [`figures/`](https://github.com/lizloutrage/trophic_ecology_mesopelagic/tree/main/figures):
+-  [`figures/`](https://github.com/lizloutrage/functional_diversity/tree/main/figures):
   contains the figures in high resolution 
 
 
 ## Code of Conduct
 
-Please note that the `ontogeny_deep_pelagic_fish` project is released with a 
+Please note that the `functional_diversity` project is released with a 
 [Contributor Code of Conduct](https://contributor-covenant.org/version/2/0/CODE_OF_CONDUCT.html). 
 By contributing to this project, you agree to abide by its terms.
