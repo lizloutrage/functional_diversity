@@ -15,6 +15,7 @@ toc-title: Sections
 toc-location: left
 page-layout: full
 theme: yeti
+fontsize: medium
 ---
 
 # Questions 
@@ -32,16 +33,24 @@ theme: yeti
   + y a en t-il plus en profondeur ? 
   + les espèces fonctionnellement rares ont t-elles une distribution plus restreinte ? 
 
+__Point méthodo__: 
 
-# 1. Data preparation
++ exclure sp avec beaucoup NA pour certains traits ? 
++ pondérer le poids de certains triats dans les analyses? (beaucoup de traits catégoriels qui peuvent artificiellement augmenter la diversité fonctionnelle)
++ besoin de transformer les données de traits distribuées de façon non-normale ? 
++ grouper les espèces en entités fonctionelles ? 
++ Ajouter données profondeur 2022
+
+# Data preparation
 ```{r}
 #| echo: true
 #| label: morpho_data
 #| warning: false
 
 library(dplyr)
+library(ggplot2)
 
-morphometric_data <- utils::read.csv(here::here("data", "morphometrics_data.csv"), sep = ";", header = T, dec = ".")
+morphometric_data <- utils::read.csv(here::here("data", "morphometric_data.csv"), sep = ";", header = T, dec = ".")
 
 morpho_data <- morphometric_data %>%
   select(-c(variable_abbreviation, variable_unit)) %>%
@@ -59,8 +68,7 @@ morpho_data[morpho_data ==""] <- NA
 morpho_data[, 4:23] <- sapply(morpho_data[, 4:23], as.numeric)
 ```
 
-### summary
-
+__Data summary__
 ```{r}
 #| echo: true
 #| label: summary_data
@@ -73,28 +81,103 @@ morpho_data_summary <-morpho_data %>%
 htmltools::tagList(DT::datatable(morpho_data_summary))
 ```
 
-## Species * traits
+## Missing data 
+The operculum width was the variable with the highest number of missing data (n = 30). This represents 4% of the data 
+
+__2 species with only NAs for an entire trait:__
+
++ _Eurpharynx pelecanoides_ : 7 traits
++ _Melanostigma atlanticum_ : 2 traits
+
+```{r}
+#| echo: false
+#| label: found_na
+#| warning: false
+#| message: false
+
+# number of NA for each trait for each species
+n_missing_data <- morpho_data %>%
+  select(-c(weight, individual_code, station)) %>%
+  group_by(species) %>%
+  summarise_all(funs(sum(is.na(.)))) %>%
+  tidyr::pivot_longer(!species, names_to = "traits", values_to = "n_na")
+
+# number of individuals by species
+n_ind <- morpho_data %>%
+  select(-c(weight, individual_code, station)) %>%
+  group_by(species) %>%
+  summarise(n = n())
+
+missing_data <- n_missing_data %>%
+  left_join(n_ind) %>%
+  #  # if sum = 0 then this species only has NAs for this trait
+  mutate(found_na = n - n_na)
+```
+
+
 ### data imputation  
+- mice algorithm: n imputation = 5, n iterations = 50
+- plot comparaison for Operculum Width
 ```{r}
 #| echo: true
 #| label: imputation_data
 #| warning: false
 #| message: false
+#| fig-width: 13
+#| fig-height: 9
 
 #select numeric variables for imputation 
-morpho_num <- morpho_data %>%
+original_data <- morpho_data %>%
   select(1:23)
 
-imputed_data <-
-  mice::mice(morpho_num,
-             m = 5,
-             maxit = 50,
-             method = "pmm",
-             printFlag=F)
-             
-completed_data <- mice::complete(imputed_data)
+imputation <-
+  mice::mice(
+    original_data,
+    m = 5,
+    maxit = 50,
+    printFlag = F
+  )
+
+imputed_data <- mice::complete(imputation)
+
+comparison <- tibble::tibble(species = original_data$species,
+                             standard_length = original_data$standard_length,
+                             Original = original_data$operculum_width,
+                             Imputed = imputed_data$operculum_width) %>%
+  arrange(species, standard_length)
+
+ggplot(comparison, aes(standard_length, Imputed, col = is.na(Original))) +
+  geom_point(size = 2, alpha=0.8) +
+  facet_wrap(~species, scales = "free") +
+  labs(col = "Imputed?") +
+  scale_color_manual(values = c("grey60", "firebrick2")) +
+  theme_bw()
+```
+__Measures density distribution__
+```{r}
+#| echo: true
+#| label: density_plot_traits
+#| warning: false
+#| message: false
+#| fig-width: 12
+#| fig-height: 9
+
+density_plot <- imputed_data  %>%
+  select(-c(individual_code, station, weight)) %>% 
+  tidyr::pivot_longer(!species, names_to = "traits", values_to = "values")
+
+
+ggplot(density_plot , aes(values)) +
+  geom_histogram(bins = 10,
+                 color = "darkgrey",
+                 fill = "lightgray") +
+  facet_wrap(~ traits, scales = "free") +
+  theme_minimal()+
+  theme(strip.text.x = element_text(size = 10, face = "bold"))
+
 ```
 
+## Species * traits
 ### calctulate functional traits 
 ```{r}
 #| echo: true
@@ -103,7 +186,7 @@ completed_data <- mice::complete(imputed_data)
 #| message: false
 
 # calculate functional numeric traits
-morpho_numeric <- completed_data %>%
+original_dataeric <- imputed_data %>%
   na.omit() %>%
   select(-individual_code) %>%
   mutate(
@@ -145,7 +228,7 @@ morpho_numeric <- completed_data %>%
   summarise(across(everything(), mean, na.rm = TRUE)) %>%
   arrange(species)
 
-# categorial traits for species without NA
+# categorical traits for species without NA
 cat_morpho <- morpho_data %>%
   select(
     species,
@@ -166,13 +249,14 @@ cat_morpho <- morpho_data %>%
   arrange(species)
 
 # combined the two data frames
-fish_traits <- morpho_numeric %>%
+fish_traits <- original_dataeric %>%
   inner_join(cat_morpho, by = "species") %>%
+  arrange(species) %>% 
   tibble::column_to_rownames("species")%>%
   # assign trait type 
   # as.factor for qualitative traits
   mutate_if(is.character, as.factor)%>%
-  # as.ordered for odered variables
+  # as.ordered for ordered variables
   mutate_at(c("gill_raker_types", "oral_gape_axis"), as.ordered)
 
 ```
@@ -194,10 +278,15 @@ htmltools::tagList(DT::datatable(fish_traits))
 #| warning: false
 
 # list of species 
-sp_names <- c(rownames(fish_traits), "Nannobrachium_atrum", "Cyclothone")
+sp_names <- c(rownames(fish_traits), "Nannobrachium_atrum", "Cyclothone", "Stomias_boa_boa")
+
+# Metadata
+metadata <-  utils::read.csv(here::here("data", "metadata.csv"), sep = ";", header = T, dec = ".")%>%
+  # calculation of standardized biomass values (vertical  trawl opening * horizontal trawl opening * distance traveled)  
+  mutate(volume_filtered = 24*58*distance)
 
 # species biomass x depth  matrix 2002-2019 ----
-data_biomass_2002_2019 <- utils::read.csv(here::here("data", "data_biomass_2002_2019.csv"), sep = ";", header = T, dec = ".")%>%
+data_biomass_2002_2019 <- utils::read.csv(here::here("data", "data_evhoe_catch_2002_2019.csv"), sep = ";", header = T, dec = ".")%>%
   replace(is.na(.), 0)%>%
   as.data.frame()%>%
   rename("species"="Code_Station")%>%
@@ -208,6 +297,7 @@ data_biomass_2002_2019 <- utils::read.csv(here::here("data", "data_biomass_2002_
   janitor::row_to_names(row_number = 1)%>%
   mutate_if(is.character, as.numeric)%>%
   tibble::rownames_to_column("Code_Station")%>%
+  filter(!Code_Station=="H0472")%>%
   tidyr::pivot_longer(!Code_Station, names_to = "species", values_to = "Tot_V_HV")%>%
   rename("Nom_Scientifique"="species")
 
@@ -226,15 +316,15 @@ data_biomass_2022 <- utils::read.csv(here::here("data", "data_evhoe_catch_2022.c
   filter(Nom_Scientifique%in%sp_names)
 
 # merge all matrix ----
-# depth of all stations 
-depth_station <- utils::read.csv(here::here("data", "depth.csv"), sep = ";", header = T, dec = ".")%>%
-  rename("Code_Station"="Station")
-
 depth_fish_biomass <- rbind(data_biomass_2002_2019, data_biomass_2021, data_biomass_2022)%>%
   as.data.frame()%>%
-  left_join(depth_station)%>%
-  filter(Code_Station != "H0472")%>%
-  rename("species"="Nom_Scientifique")%>%  
+   rename("species"="Nom_Scientifique",
+         "station"="Code_Station") %>%  
+  left_join(metadata) %>% 
+  select(species, Tot_V_HV, depth, volume_filtered)%>%
+  # divise biomass by the volume filtered at each trawl (g.m3)
+  mutate(biomass_cpu=(Tot_V_HV/volume_filtered)*1000)%>%
+  select(species, depth, biomass_cpu)%>%  
   # add column with depth layer
   mutate(
     depth_layer = case_when(
@@ -245,22 +335,22 @@ depth_fish_biomass <- rbind(data_biomass_2002_2019, data_biomass_2021, data_biom
   replace(is.na(.), 0)%>%
   select(-depth)%>%
   group_by(species, depth_layer)%>%
-  mutate(biomass=sum(Tot_V_HV))%>%
-  select(-c(Tot_V_HV, Code_Station))%>%
+  mutate(biomass=sum(biomass_cpu))%>%
+  select(-c(biomass_cpu))%>%
   distinct()%>%
   tidyr::pivot_wider(names_from = species, values_from = biomass)%>%
   replace(is.na(.), 0)%>%
   tibble::column_to_rownames(var = "depth_layer")%>% 
-  mutate(across(where(is.numeric), round, 2))%>%
   #change species name
   rename("Lampanyctus_ater"="Nannobrachium_atrum")%>%
   rename("Cyclothone_sp"="Cyclothone")%>%
+  rename("Stomias_boa"="Stomias_boa_boa") %>% 
   as.matrix()
 
 ```
 
 - __assemblages__ = depth layers 
-- __biomass data__ = all EVHOE data 2002-2022
+- __biomass data__ = all EVHOE data 2002-2022 (in m^3)
 ```{r}
 #| echo: true
 #| label: depth_fish_biomass
@@ -268,6 +358,56 @@ depth_fish_biomass <- rbind(data_biomass_2002_2019, data_biomass_2021, data_biom
 #| message: false
 
 htmltools::tagList(DT::datatable(depth_fish_biomass))
+```
+
+### Species depth distribution 
+```{r}
+#| echo: true
+#| label: density_depth_distribution
+#| warning: false
+#| message: false
+#| fig-width: 11
+#| fig-height: 7
+
+depth_distribution <- rbind(data_biomass_2002_2019, data_biomass_2021, data_biomass_2022)%>%
+  as.data.frame()%>%  
+  rename("station"="Code_Station")%>%
+  left_join(metadata)%>%
+  rename("species"="Nom_Scientifique")%>% 
+  select(-c(station))%>%
+  distinct()%>%
+  filter(Tot_V_HV>0)%>%
+  group_by(species)%>%
+  mutate(biomass_tot = sum(Tot_V_HV))%>%
+  ungroup()%>%
+  group_by(species, depth)%>%
+  mutate(biomass_depth = sum(Tot_V_HV))%>%
+  select(species, biomass_depth, biomass_tot, depth)%>%
+  distinct()%>%
+  group_by(species, depth)%>%
+  mutate(biomass_rel=biomass_depth/biomass_tot*100)%>%
+  select(species, depth, biomass_rel)%>%
+  mutate(biomass = as.integer(biomass_rel))%>%
+  select(-biomass_rel)%>%
+  tidyr::uncount(biomass)
+
+# Order in function of median depth
+depth_distribution$species = with(depth_distribution, reorder(species, depth, median))  
+
+ggplot(depth_distribution,
+       aes(x = depth, y = species, group = species))+ 
+  ggridges::stat_density_ridges(quantile_lines = TRUE, quantiles = 0.5 , alpha=0.4, size=0.7,
+                                rel_min_height = 0.001, scale=1.2, col="gray60")+
+  theme_bw()+
+  scale_y_discrete(position = "left")+
+  scale_x_reverse(limits = c(2000,0))+
+  coord_flip()+
+  ylab(label = "")+ xlab("Depth (m)")+
+  theme(axis.text.y = element_text(size=11),
+        axis.text.x = element_text(face="italic", size=9, angle=80, vjust = 0.5, hjust=0.5),
+        axis.title.x = element_text(size=11),
+        axis.title.y = element_text(size=11))+
+  guides(fill="none", col="none", alpha="none")
 ```
 
 
@@ -280,6 +420,7 @@ The **first column** contains **traits name**. The **second column** contains
 * **O**: ordinal traits (ordered variable)
 * **Q**: quantitative traits (numeric values)
 
+* 1/3 of the traits are nominal (traits related to teeth and photophores), need to give them different weights so as not to overestimate functional diversity? 
 ```{r}
 #| echo: true
 #| label: fish_traits_cat
@@ -288,6 +429,44 @@ The **first column** contains **traits name**. The **second column** contains
 
 fish_traits_cat <- utils::read.csv(here::here("data", "fish_traits_cat.csv"), sep = ";", header = T, dec = ".")
 htmltools::tagList(DT::datatable(fish_traits_cat))
+```
+# 1. CWM 
+__Community Weighted Mean__ : somme de l'abondance relative d'une espèce x valeur du trait
+
++ trait quantittatif : valeur moyenne du trait si on prend un individu au hasard dans l'assemblage 
+
++ trait catégoriel : proportion des espèces possédant ce trait, une valeur élevée peut indiquer soit qu'un grand nombre possèdent se trait ou que l'espèce avec la plus forte abondance relative possède ce trait 
+
+```{r}
+#| echo: true
+#| label: CWM
+#| warning: false
+#| message: false
+
+# spxcom.matrix ----
+spxcom.matrix <-  depth_fish_biomass %>% 
+  t() %>% 
+  as.data.frame() %>% 
+  relocate("Epipelagic", "Upper mesopelagic", "Lower mesopelagic","Bathypelagic" ) %>% 
+  tibble::rownames_to_column("species") %>% 
+  arrange(species) %>% 
+  tibble::column_to_rownames("species") %>% 
+  as.matrix()
+
+# spxtraits.matrix ----
+spxtraits.matrix <- fish_traits %>%
+  mutate(across(17:25, ~ ifelse(. == "P", 1, ifelse(. == "A", 0, .))),
+         across(26, ~ ifelse(. == "A", 1, ifelse(. == "B", 2, ifelse(. == "C", 3, .))))) %>% 
+  select(-c(gill_raker_types, oral_gape_axis)) 
+
+#check rownames
+#rownames(spxtraits.matrix) == rownames(spxcom.matrix)
+
+result_CWM <- FD::functcomp(spxtraits.matrix, t(spxcom.matrix)) 
+#FD::functcomp(spxtraits.matrix, t(spxcom.matrix), CWM.type = "all")
+
+htmltools::tagList(DT::datatable(result_CWM))
+
 ```
 
 # 2. Build a functional space using the mFD package
@@ -325,7 +504,7 @@ sp_dist_fish <- mFD::funct.dist(
   stop_if_NA    = TRUE)
 
 ## Output of the function mFD::funct.dist() ----
-round(sp_dist_fish, 3)
+#round(sp_dist_fish, 3)
 
 ```
 
@@ -389,18 +568,78 @@ This function generates a figure with three panels (in rows) for each selected f
 #| label: test_correlation
 #| warning: false
 #| message: false
+#| fig-width: 14
+#| fig-height: 9
 
 sp_faxes_coord_fish <- fspaces_quality_fish$"details_fspaces"$"sp_pc_coord"
 
-# fish_tr_faxes <- mFD::traits.faxes.cor(
-#   sp_tr          = fish_traits, 
-#   sp_faxes_coord = sp_faxes_coord_fish[ , c("PC1", "PC2", "PC3", "PC4")], 
-#   plot           = F)
-# 
-# ## Print traits with significant effect ----
-# fish_tr_faxes$"tr_faxes_stat"[which(fish_tr_faxes$"tr_faxes_stat"$"p.value" < 0.05), ]
+# As we have 27 traits we have to split the df to see correlation between functional axes and traits 
+# first set ----
+fish_traits_1 <- fish_traits%>%
+  select(1:9)
+
+fish_tr_faxes <- mFD::traits.faxes.cor(
+  sp_tr          = fish_traits_1, 
+  sp_faxes_coord = sp_faxes_coord_fish[ , c("PC1", "PC2", "PC3", "PC4")], 
+  plot           = T)
+
+## Print traits with significant effect ----
+fish_tr_faxes$"tr_faxes_stat"[which(fish_tr_faxes$"tr_faxes_stat"$"p.value" < 0.05), ]
+
+## Plot ----
+fish_tr_faxes$"tr_faxes_plot"
+```
+
+```{r}
+#| echo: true
+#| label: test_correlation_2
+#| warning: false
+#| message: false
+#| fig-width: 14
+#| fig-height: 9
+
+# second set ----
+fish_traits_2 <- fish_traits%>%
+  select(10:18)
+
+fish_tr_faxes_2 <- mFD::traits.faxes.cor(
+  sp_tr          = fish_traits_2, 
+  sp_faxes_coord = sp_faxes_coord_fish[ , c("PC1", "PC2", "PC3", "PC4")], 
+  plot           = T)
+
+## Print traits with significant effect ----
+fish_tr_faxes_2$"tr_faxes_stat"[which(fish_tr_faxes_2$"tr_faxes_stat"$"p.value" < 0.05), ]
+
+## Plot ----
+fish_tr_faxes_2$"tr_faxes_plot"
+```
+
+
+```{r}
+#| echo: true
+#| label: test_correlation_3
+#| warning: false
+#| message: false
+#| fig-width: 14
+#| fig-height: 9
+
+# third set ----
+fish_traits_3 <- fish_traits%>%
+  select(19:27)
+
+fish_tr_faxes_3 <- mFD::traits.faxes.cor(
+  sp_tr          = fish_traits_3, 
+  sp_faxes_coord = sp_faxes_coord_fish[ , c("PC1", "PC2", "PC3", "PC4")], 
+  plot           = T)
+
+## Print traits with significant effect ----
+fish_tr_faxes_3$"tr_faxes_stat"[which(fish_tr_faxes_3$"tr_faxes_stat"$"p.value" < 0.05), ]
+
+## Plot ----
+fish_tr_faxes_3$"tr_faxes_plot"
 
 ```
+
 
 ## 2.4 Plotting the selected functional space and position of species
 ```{r}
@@ -408,21 +647,23 @@ sp_faxes_coord_fish <- fspaces_quality_fish$"details_fspaces"$"sp_pc_coord"
 #| label: plot_functional_space
 #| warning: false
 #| message: false
+#| fig-width: 8
+#| fig-height: 8
 
-#sp_faxes_coord_fish <- fspaces_quality_fish$"details_fspaces"$"sp_pc_coord"
-# 
-# big_plot <- mFD::funct.space.plot(
-#   sp_faxes_coord  = sp_faxes_coord_fish[ , c("PC1", "PC2", "PC3", "PC4")],
-#   faxes           = c("PC1", "PC2", "PC3", "PC4"),
-#   name_file       = NULL,
-#   faxes_nm        = NULL,
-#   range_faxes     = c(NA, NA),
-#   plot_ch         = TRUE,
-#   plot_vertices   = TRUE,
-#   plot_sp_nm      = NULL,
-#   check_input     = TRUE)
-# 
-# big_plot$"patchwork"
+sp_faxes_coord_fish <- fspaces_quality_fish$"details_fspaces"$"sp_pc_coord"
+
+big_plot <- mFD::funct.space.plot(
+  sp_faxes_coord  = sp_faxes_coord_fish[ , c("PC1", "PC2", "PC3", "PC4")],
+  faxes           = c("PC1", "PC2", "PC3", "PC4"),
+  name_file       = NULL,
+  faxes_nm        = NULL,
+  range_faxes     = c(NA, NA),
+  plot_ch         = TRUE,
+  plot_vertices   = TRUE,
+  plot_sp_nm      = NULL,
+  check_input     = TRUE)
+
+big_plot$"patchwork"
 ```
 
 # 3. Computing and plotting FD indices using the mFD package
@@ -457,7 +698,7 @@ The function has two main outputs:
 #| message: false
 
 fd_ind_values_fish <- alpha_fd_indices_fish$"functional_diversity_indices"
-htmltools::tagList(DT::datatable(fd_ind_values_fish))
+htmltools::tagList(DT::datatable(round(fd_ind_values_fish, 3)))
 ```
 
 + a details list of data.frames and lists gathering information such as coordinates of centroids, distances and identity of the nearest neighbour, distances to the centroid, etc. The user does not have to directly use it but it will be useful if FD indices are then plotted. It can be retrieved through:
@@ -493,8 +734,8 @@ plots_alpha <- mFD::alpha.multidim.plot(
 #| label: plot_FRic
 #| warning: false
 #| message: false
-#| fig-width: 11
-#| fig-height: 11
+#| fig-width: 12
+#| fig-height: 8
 
 plots_alpha$"fric"$"patchwork"
 ```
@@ -507,8 +748,8 @@ plots_alpha$"fric"$"patchwork"
 #| label: plot_FDiv
 #| warning: false
 #| message: false
-#| fig-width: 11
-#| fig-height: 11
+#| fig-width: 12
+#| fig-height: 8
 
 plots_alpha$"fdiv"$"patchwork"
 ```
@@ -521,8 +762,8 @@ plots_alpha$"fdiv"$"patchwork"
 #| label: plot_FSpe
 #| warning: false
 #| message: false
-#| fig-width: 11
-#| fig-height: 11
+#| fig-width: 12
+#| fig-height: 8
 
 plots_alpha$"fspe"$"patchwork"
 ```
@@ -536,8 +777,8 @@ plots_alpha$"fspe"$"patchwork"
 #| label: plot_FDis
 #| warning: false
 #| message: false
-#| fig-width: 11
-#| fig-height: 11
+#| fig-width: 12
+#| fig-height: 8
 
 plots_alpha$"fdis"$"patchwork"
 ```
@@ -550,8 +791,8 @@ plots_alpha$"fdis"$"patchwork"
 #| label: plot_FIde
 #| warning: false
 #| message: false
-#| fig-width: 11
-#| fig-height: 11
+#| fig-width: 12
+#| fig-height: 8
 
 plots_alpha$"fide"$"patchwork"
 ```
@@ -594,7 +835,6 @@ beta_fd_indices_fish$"details"$"asb_FRic"
 #| message: false
 
 beta_fd_indices_fish$"details"$"asb_vertices"
-
 ```
 
 + overlap between convex hulls shaping each of the two species assemblages.
@@ -604,13 +844,13 @@ beta_fd_indices_fish$"details"$"asb_vertices"
 #| warning: false
 #| message: false
 #| fig-width: 12
-#| fig-height: 12
+#| fig-height: 10
 
 beta_plot_fish <- mFD::beta.multidim.plot(
   output_beta_fd_multidim = beta_fd_indices_fish,
   plot_asb_nm             = c("Epipelagic", "Upper mesopelagic"),
   beta_family             = c("Jaccard"),
-  plot_sp_nm              = c("Maurolicus_muelleri", "Notoscopelus_bolini", "Lampanyctus_ater"),
+  plot_sp_nm              = c("Maurolicus_muelleri", "Lampanyctus_crocodilus", "Argyropelecus_olfersii"),
   faxes                   = paste0("PC", 1:4),
   name_file               = NULL,
   faxes_nm                = NULL,
@@ -619,13 +859,15 @@ beta_plot_fish <- mFD::beta.multidim.plot(
 
 beta_plot_fish$"patchwork"
 ```
+
+
 ```{r}
 #| echo: true
 #| label: plot_beta_FD_up_lw
 #| warning: false
 #| message: false
 #| fig-width: 12
-#| fig-height: 12
+#| fig-height: 10
 
 beta_plot_fish <- mFD::beta.multidim.plot(
   output_beta_fd_multidim = beta_fd_indices_fish,
@@ -648,7 +890,7 @@ beta_plot_fish$"patchwork"
 #| warning: false
 #| message: false
 #| fig-width: 12
-#| fig-height: 12
+#| fig-height: 10
 
 beta_plot_fish <- mFD::beta.multidim.plot(
   output_beta_fd_multidim = beta_fd_indices_fish,
@@ -731,7 +973,7 @@ quantile(sp_ui$Ui, probs = seq(0, 1, by = 0.1))
 
 htmltools::tagList(DT::datatable(sp_ui))
 ```
-Based on these results we see that _Anoplogaster cornuta_, _Evermannella balbo_, and _Chauliodus sloani_ are the most isolated fish in the functional space. Meaning that they have the most distant nearest neighbors.
+Based on these results we see that _Serrivomer beanii_, _Anoplogaster cornuta_, and _Malacosteus niger_ are the most isolated fish in the functional space. Meaning that they have the most distant nearest neighbors.
 
 ### 4.2.2 Functional originality at local scale
 
@@ -843,7 +1085,7 @@ plot_reg_distinctiveness <- ggplot(sp_coord_di_ui, aes(PC1, PC2)) +
   geom_hline(yintercept = 0, linetype = 2) +
   geom_vline(xintercept = 0, linetype = 2) +
   geom_point(aes(color = distinctiveness), size=4) +
-  ggrepel::geom_text_repel(aes(label = species), size=4) +
+  ggrepel::geom_text_repel(aes(label = species), size=3) +
   scale_color_gradient(high = "#914568", low = "#6BA1B9", "Functional\nDistinctiveness")+
   theme_bw() +
   theme(aspect.ratio = 1)
@@ -852,7 +1094,7 @@ plot_reg_uniqueness <- ggplot(sp_coord_di_ui, aes(PC1, PC2)) +
   geom_hline(yintercept = 0, linetype = 2) +
   geom_vline(xintercept = 0, linetype = 2) +
   geom_point(aes(color = Ui), size=4) +
-  ggrepel::geom_text_repel(aes(label = species), size=4) +
+  ggrepel::geom_text_repel(aes(label = species), size=3) +
   scale_color_gradient(high = "#914568", low = "#6BA1B9","Functional\nUniqueness") +
   theme_bw() +
   theme(aspect.ratio = 1)
@@ -878,13 +1120,15 @@ local_di_ap$depth <- rownames(local_di_ap)
 #| label: plot_dist_ri_reg
 #| warning: false
 #| message: false
+#| fig-width: 6
+#| fig-height: 6
 
 sp_di_ri <- merge(sp_di, ri, by = "species")
 sp_di_ri_ui <- merge(sp_di_ri, sp_ui, by = "species")
 
-plot_dist_ri_reg <- ggplot(sp_di_ri, aes(distinctiveness, Ri)) +
+plot_dist_ri_reg <-ggplot(sp_di_ri, aes(distinctiveness, Ri)) +
   geom_point() +
-  ggrepel::geom_text_repel(aes(label = species)) +
+  ggrepel::geom_text_repel(aes(label = species), max.overlaps=22, size=3) +
   labs(x = "Functional Distinctiveness", y = "Geographical Restrictedness") +
   theme_bw() +
   theme(aspect.ratio = 1)
@@ -893,21 +1137,75 @@ plot_dist_ri_reg
 ```
 On this visualization we can clearly see that _Anoplogaster cornuta_ is overall the most distinct species while being quite restricted in terms of depth. On the other hand, the two Myctophidae _Lampanyctus ater_ and _Lobianchia_gemellarii_ are the most functionally common and regionally widespread species (low restrictedness).
 
+
+
+```{r}
+#| echo: true
+#| label: plot_dist_ri_reg_depth
+#| warning: false
+#| message: false
+#| fig-width: 7
+#| fig-height: 7
+
+# median depth of species 
+median_depth_fish <- depth_distribution%>%
+  group_by(species)%>%
+  summarise(median_depth= median(depth))
+
+sp_di_ri_depth <- sp_di_ri%>%
+  left_join(median_depth_fish)
+
+sp_di_ri_depth_plot <- ggplot(sp_di_ri_depth, aes(distinctiveness, Ri)) +
+  geom_point(aes(col=median_depth), size=3) +
+  ggrepel::geom_text_repel(aes(label = species), max.overlaps=22, size=3) +
+  labs(x = "Functional Distinctiveness", y = "Geographical Restrictedness") +
+  scale_color_gradient(high = "#00263A", low = "#C5F8FF","Median depth (m)") +
+  theme_bw() +
+  theme(aspect.ratio = 1)
+
+sp_di_ri_depth_plot
+```
+
+
 - __Functional Uniqueness__
 ```{r}
 #| echo: true
 #| label: plot_ui_ri_reg
 #| warning: false
 #| message: false
+#| fig-width: 6
+#| fig-height: 6
 
 plot_ui_ri_reg <- ggplot(sp_di_ri_ui, aes(Ui, Ri)) +
   geom_point() +
-  ggrepel::geom_text_repel(aes(label = species)) +
+  ggrepel::geom_text_repel(aes(label = species), max.overlaps=22, size=3) +
   labs(x = "Functional Uniqueness", y = "Geographical Restrictedness") +
   theme_bw() +
   theme(aspect.ratio = 1)
 
 plot_ui_ri_reg
+```
+
+```{r}
+#| echo: true
+#| label: plot_ui_ri_reg_depth
+#| warning: false
+#| message: false
+#| fig-width: 7
+#| fig-height: 7
+
+sp_di_ri_ui_depth <- sp_di_ri_ui%>%
+  left_join(median_depth_fish)
+
+plot_ui_ri_reg_depth <- ggplot(sp_di_ri_ui_depth, aes(Ui, Ri)) +
+  geom_point(aes(col=median_depth), size=3) +
+  ggrepel::geom_text_repel(aes(label = species), max.overlaps=22, size=3) +
+  labs(x = "Functional Uniqueness", y = "Geographical Restrictedness") +
+  scale_color_gradient(high = "#00263A", low = "#C5F8FF","Median depth (m)") +
+  theme_bw() +
+  theme(aspect.ratio = 1)
+
+plot_ui_ri_reg_depth
 ```
 
 
@@ -934,6 +1232,7 @@ sp_local_di_si <- merge(
 
 head(sp_local_di_si)
 ```
+
 ```{r}
 #| echo: true
 #| label: plot_local_di_si
