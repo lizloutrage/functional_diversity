@@ -2110,16 +2110,29 @@ ggplot(categorical_traits, aes(x = TraitValue, y = Ui)) +
 __Relation between biomass and distinctiveness__
 ```{r}
 #| echo: true
-#| label: biomass_sp_sup
+#| label: biomass_sp
 #| warning: false
 #| message: false
 
-biomass_sup <- depth_biomass%>% 
-   as.data.frame() %>% 
-   group_by(assemblage) %>% 
-   top_n(n=5)
-
-htmltools::tagList(DT::datatable(biomass_sup))
+depth_biomass <- rbind(data_biomass_2002_2019, data_biomass_2021, data_biomass_2022)%>%
+  as.data.frame()%>%
+  rename("species"="Nom_Scientifique",
+         "station"="Code_Station") %>%
+  left_join(metadata) %>%
+  select(species, Tot_V_HV, depth, volume_filtered)%>%
+  # divise biomass by the volume filtered at each trawl (g.m3)
+  mutate(biomass_cpu=(Tot_V_HV/volume_filtered)*1000)%>%
+  select(species, depth, biomass_cpu)%>%
+  group_by(species, depth)%>%
+  mutate(biomass=sum(biomass_cpu))%>%
+  select(-c(biomass_cpu))%>%
+  distinct()  %>%
+  mutate(species = case_when(
+    species == "Nannobrachium_atrum" ~ "Lampanyctus_ater",
+    species == "Cyclothone" ~ "Cyclothone_sp",
+    species == "Stomias_boa_boa" ~ "Stomias_boa",
+    TRUE ~ species
+  ))
  
 ```
 
