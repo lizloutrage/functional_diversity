@@ -1,6 +1,7 @@
+library(traitstrap)
 
 # Trait 
-trait <- morpho_data[,1:23] %>% 
+trait_boot <- morpho_data[,1:23] %>% 
   inner_join(metadata) %>% 
   select(-c(individual_code, years, longitude_start,
             latitude_start, longitude_end, longitude_end,
@@ -83,7 +84,7 @@ community <-  rbind(data_biomass_2002_2019, data_biomass_2021, data_biomass_2022
 trait_filling <- trait_fill(
   # input data (mandatory)
   comm = community,
-  traits = trait,
+  traits = trait_boot,
   
   # specifies columns in your data (mandatory)
   abundance_col = "biomass",
@@ -103,10 +104,23 @@ trait_filling
 # run nonparametric bootstrapping
 np_bootstrapped_moments <- trait_np_bootstrap(
   trait_filling, 
-  nrep = 50
+  nrep = 100
 )
 
 np_bootstrapped_moments
+
+
+np_bootstrapped_moments$depth_layer <- factor(np_bootstrapped_moments$depth_layer, 
+                                              levels = c("Epipelagic", "Upper mesopelagic", "Lower mesopelagic", "Bathypelagic"))
+
+# Mean
+ggplot(np_bootstrapped_moments, aes(x=depth_layer, y=mean)) +
+  geom_boxplot(aes(col=depth_layer, fill=depth_layer), alpha=0.2) +
+  scale_fill_manual(values = c("#FEA520","#D62246","#6255B4","#3C685A"))+
+  scale_color_manual(values = c("#FEA520","#D62246","#6255B4","#3C685A"))+
+  theme_light() +
+  facet_wrap(~trait, scales = "free")
+
 
 # summarizes bootstrapping output
 sum_boot_moment <- trait_summarise_boot_moments(
@@ -122,13 +136,3 @@ raw_dist_np <- trait_np_bootstrap(
 )
 
 raw_dist_np
-
-raw_dist_np$depth_layer <- factor(raw_dist_np$depth_layer, 
-                             levels = c("Epipelagic", "Upper mesopelagic", "Lower mesopelagic", "Bathypelagic"))
-
-ggplot(raw_dist_np, aes(x = log(values), fill = depth_layer, col=depth_layer)) +
-  geom_density(alpha = 0.4) +
-  scale_fill_manual(values = c("#FEA520","#D62246","#6255B4","#3C685A"))+
-  scale_color_manual(values = c("#FEA520","#D62246","#6255B4","#3C685A"))+
-  labs(x = "log(trait value)") +
-  facet_wrap(facets = vars(trait), scales = "free")

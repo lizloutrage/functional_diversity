@@ -2,7 +2,7 @@
 output: github_document
 ---
 
-# :fish: :straight_ruler: Functional diversity of deep-sea fishes in the Bay of Biscay, Northeast Atlantic  
+# :fish: :straight_ruler: Functional diversity of deep-pelagic fish in the Bay of Biscay, Northeast Atlantic  
 
 <!-- badges: start -->
 [![License: GPL-2](https://img.shields.io/badge/License-GPL%20v2-blue.svg)](https://choosealicense.com/licenses/gpl-2.0/)

@@ -18,7 +18,6 @@ theme: yeti
 fontsize: medium
 ---
 
-
 # Data preparation
 ```{r}
 #| echo: true
@@ -56,7 +55,7 @@ morpho_data_summary <-morpho_data %>%
   group_by(species) %>%
   count(species)
 
-htmltools::tagList(DT::datatable(morpho_data_summary))
+#htmltools::tagList(DT::datatable(morpho_data_summary))
 ```
 
 ## Missing data 
@@ -539,8 +538,8 @@ __Community Weighted Mean__ : somme de l'abondance relative d'une espèce x vale
 #| label: CWM
 #| warning: false
 #| message: false
-#| fig-width: 9
-#| fig-height: 8
+#| fig-width: 8
+#| fig-height: 7
 
 # spxtraits.matrix ----
 spxcom.matrix <-  depth_fish_biomass %>% 
@@ -619,19 +618,6 @@ biomass <- t_sp_rel_biomass %>%
   tibble::rownames_to_column(var = "species") %>% 
   tidyr::pivot_longer(!species, names_to = "depth_layer", values_to = "biomass") 
 
-sd_values <- spxtraits.matrix %>% 
-  as.data.frame() %>% 
-  tibble::rownames_to_column(var = "species") %>% 
-  tidyr::pivot_longer(!species, names_to = "trait", values_to = "values") %>% 
-  inner_join(biomass) %>% 
-  filter(biomass>0) %>% 
-  group_by(trait, depth_layer) %>% 
-  mutate(SD= sd(values)) %>% 
-  select(SD, depth_layer, trait)
-
-CWM_df <- CWM_df %>% 
-  inner_join(sd_values)
-
 CWM_df <- CWM_df %>% 
   filter(!trait%in% c("chin_barbel",
                       "dorsal_fin_insertion", "eye_position",
@@ -665,17 +651,382 @@ ggplot(CWM_df, aes(x = depth_layer, y = weighted_mean, group = depth_layer, colo
   theme(axis.text.x = element_blank(), 
         axis.title.x = element_blank(), 
         axis.title.y.left =  element_text(size =14), 
-        strip.text = element_text(size =12, face="bold"),  
+        strip.text = element_text(size =14, face="bold"),  
         legend.title = element_text(size =11),  
         legend.text = element_text(size =11), 
         axis.title.y = element_text(size=11),
         axis.text.y = element_text(size=12),
         strip.background=element_rect(fill="white"),
-        strip.text.x = element_text(size = 12, face = "bold", color = "black"))
+        strip.text.x = element_text(size = 15, face = "bold", color = "black"))
 
 ggsave("CWM.png", path = "figures", dpi = 700, height = 10, width = 10)
 
 ```
+## CWM bootstrap
+- non parametric
+```{r}
+#| echo: true
+#| label: CWM_boot
+#| warning: false
+#| message: false
+#| fig-width: 11
+#| fig-height: 8
+
+library(traitstrap)
+
+# Trait 
+trait_boot <- morpho_data%>% 
+  inner_join(metadata) %>% 
+  select(-c(individual_code, years, longitude_start,
+            latitude_start, longitude_end, longitude_end,
+            volume_filtered, distance)) %>% 
+  mutate(
+    eye_size = eye_diameter / head_depth,
+    orbital_length = eye_diameter / standard_length,
+    oral_gape_surface = mouth_width * mouth_depth / body_width * body_depth,
+    oral_gape_shape = mouth_depth / mouth_width,
+    oral_gape_position = distance_upper_jaws_bottom_head / head_depth,
+    lower_jaw_length = lower_jaw_length / standard_length,
+    head_length = head_length / standard_length,
+    body_depth = body_depth / standard_length,
+    pectoral_fin_position = distance_pectoral_bottom_body / body_depth_pectoral_insertion,
+    pectoral_fin_insertion = prepectoral_length / standard_length,
+    transversal_shape = body_depth / body_width,
+    dorsal_fin_insertion = predorsal_length / standard_length,
+    eye_position = eye_height / head_depth,
+    operculum_volume = operculum_depth / operculum_width,
+    gill_outflow = operculum_width,
+    caudal_throttle_width = caudal_peduncle_min_depth
+  ) %>%
+  select(
+    depth,
+    species,
+    eye_size,
+    orbital_length,
+    gill_outflow,
+    oral_gape_surface,
+    oral_gape_shape,
+    oral_gape_position,
+    lower_jaw_length,
+    head_length,
+    body_depth,
+    pectoral_fin_position,
+    pectoral_fin_insertion,
+    transversal_shape,
+    caudal_throttle_width,
+    dorsal_fin_insertion,
+    eye_position,
+    operculum_volume,
+    ventral_photophores, 
+    gland_head,
+    chin_barbel, 
+    small_teeth, 
+    large_teeth, 
+    fang_teeth, 
+    retractable_teeth, 
+    internal_teeth
+  ) %>%
+  mutate_at(vars(ventral_photophores, 
+                 gland_head,
+                 chin_barbel, 
+                 small_teeth, 
+                 large_teeth, 
+                 fang_teeth, 
+                 retractable_teeth, 
+                 internal_teeth), 
+            funs(ifelse(. == "P", 1, ifelse(. == "A", 0, .)))) %>% 
+  mutate(across(all_of(c("ventral_photophores", 
+                         "gland_head",
+                         "chin_barbel", 
+                         "small_teeth", 
+                         "large_teeth", 
+                         "fang_teeth", 
+                         "retractable_teeth", 
+                         "internal_teeth")), as.numeric)) %>% 
+  tidyr::pivot_longer(!c(species,depth), names_to = "trait", values_to = "values")%>%
+  # add column with depth layer
+  mutate(
+    depth_layer = case_when(
+      between(depth, 0, 174) ~ "Epipelagic",
+      between(depth, 175, 699) ~ "Upper mesopelagic",
+      between(depth, 700, 999) ~ "Lower mesopelagic",
+      between(depth, 1000, 2000) ~ "Bathypelagic"))
+
+# Community 
+community <-  rbind(data_biomass_2002_2019, data_biomass_2021, data_biomass_2022)%>%
+  as.data.frame()%>%
+  rename("species"="Nom_Scientifique",
+         "station"="Code_Station") %>%
+  left_join(metadata) %>%
+  select(species, Tot_V_HV, depth, volume_filtered)%>%
+  # add column with depth layer
+  mutate(
+    depth_layer = case_when(
+      between(depth, 0, 174) ~ "Epipelagic",
+      between(depth, 175, 699) ~ "Upper mesopelagic",
+      between(depth, 700, 999) ~ "Lower mesopelagic",
+      between(depth, 1000, 2000) ~ "Bathypelagic"))%>%
+  replace(is.na(.), 0)%>%
+  group_by(species, depth)%>%
+  mutate(biomass=sum(Tot_V_HV))%>%
+  select(-c(Tot_V_HV))%>%
+  distinct()%>%
+  select(-c(volume_filtered)) %>% 
+  filter(biomass>0) %>% 
+  mutate(species = case_when(
+    species == "Nannobrachium_atrum"~"Lampanyctus_ater",
+    species == "Cyclothone"~"Cyclothone_sp",
+    species == "Stomias_boa_boa"~"Stomias_boa",
+    TRUE ~ species
+  )) 
+
+trait_filling <- trait_fill(
+  # input data (mandatory)
+  comm = community,
+  traits = trait_boot,
+  
+  # specifies columns in your data (mandatory)
+  abundance_col = "biomass",
+  taxon_col = "species",
+  trait_col = "trait",
+  value_col = "values",
+  
+  # specifies sampling hierarchy
+  scale_hierarchy = c("depth_layer", "depth"),
+  
+  # min number of samples
+  min_n_in_sample = 9
+)
+
+# run nonparametric bootstrapping
+np_bootstrapped_moments <- trait_np_bootstrap(
+  trait_filling, 
+  nrep = 100
+)
+
+np_bootstrapped_moments_plot <- np_bootstrapped_moments %>% 
+  mutate(trait= gsub("_"," ", trait))%>%
+  filter(
+    trait %in% c(
+      "caudal throttle width",
+      "large teeth",
+      "oral gape surface",
+      "gill outflow",
+      "internal teeth",
+      "oral gape shape",
+      "small teeth",
+      "orbital length",
+      "transversal shape",
+      "operculum volume",
+      "body depth",
+      "eye size"
+    )
+  )
+
+np_bootstrapped_moments_plot$trait <- factor(
+  np_bootstrapped_moments_plot$trait,
+  levels = c(
+    "caudal throttle width",
+    "large teeth",
+    "oral gape surface",
+    "gill outflow",
+    "internal teeth",
+    "oral gape shape",
+    "small teeth",
+    "orbital length",
+    "transversal shape",
+    "operculum volume",
+    "body depth",
+    "eye size"
+  )
+)
+
+
+np_bootstrapped_moments_plot$depth_layer <- factor(np_bootstrapped_moments_plot$depth_layer, 
+                                              levels = c("Epipelagic", "Upper mesopelagic", "Lower mesopelagic", "Bathypelagic"))
+
+# Mean
+ggplot(np_bootstrapped_moments_plot, aes(x=depth_layer, y=mean)) +
+  geom_boxplot(aes(col=depth_layer, fill=depth_layer), alpha=0.1) +
+  scale_fill_manual(values = c("#FEA520","#D62246","#6255B4","#3C685A"))+
+  scale_color_manual(values = c("#FEA520","#D62246","#6255B4","#3C685A"))+
+  labs(col="Depth layer", fill="Depth layer", y="Bootstrapped CWM")+
+  facet_wrap(~trait, scales = "free")+
+  theme_light()+
+  theme(axis.text.x = element_blank(), 
+        axis.title.x = element_blank(), 
+        axis.title.y.left =  element_text(size =14), 
+        strip.text = element_text(size =14, face="bold"),  
+        legend.title = element_text(size =11),  
+        legend.text = element_text(size =11), 
+        axis.title.y = element_text(size=11),
+        axis.text.y = element_text(size=12),
+        strip.background=element_rect(fill="white"),
+        strip.text.x = element_text(size = 10, color = "black"))
+
+ggsave("CWM_boot.png", path = "figures/additional_analyses", dpi = 700, height = 8, width = 12)
+
+```
+
+### Summarizes bootstrapping output
+```{r}
+#| echo: true
+#| label: boot_sum
+#| warning: false
+#| message: false
+
+# summarizes bootstrapping output
+sum_boot_moment <- trait_summarise_boot_moments(
+  np_bootstrapped_moments
+)
+
+htmltools::tagList(DT::datatable(sum_boot_moment))
+```
+
+### kruskal test beetween depth layers 
+```{r}
+#| echo: true
+#| label: kruskal_test
+#| warning: false
+#| message: false
+
+# Function to apply Kruskal-Wallis test and effect size calculation to each group
+kruskal_with_effsize <- function(data, trait_name) {
+  kruskal_res <- rstatix::kruskal_test(data, mean ~ depth_layer)
+  effsize_res <- rstatix::kruskal_effsize(data, mean ~ depth_layer)
+  combined_res <- cbind(trait = trait_name, kruskal_res, effsize_res)
+  return(combined_res)
+}
+
+# Perform the Kruskal-Wallis test and calculate the eta² statistic for each trait
+res.kruskal <- np_bootstrapped_moments_plot %>%
+  group_by(trait) %>%
+  group_map(~ kruskal_with_effsize(.x, .y$trait)) %>%
+  bind_rows()
+
+# View the results
+htmltools::tagList(DT::datatable(res.kruskal))
+```
+
+### Extracting raw distributions
+```{r}
+#| echo: true
+#| label: raw_distribution
+#| warning: false
+#| message: false
+#| fig-width: 10
+#| fig-height: 8
+
+# run nonparametric bootstrapping
+raw_dist_np <- trait_np_bootstrap(
+  filled_traits = trait_filling,
+  raw = TRUE
+)
+
+raw_dist_np$depth_layer <- factor(
+  raw_dist_np$depth_layer,
+  levels = c(
+    "Epipelagic",
+    "Upper mesopelagic",
+    "Lower mesopelagic",
+    "Bathypelagic"
+  )
+) 
+
+raw_dist_np <- raw_dist_np%>% 
+    mutate(trait= gsub("_"," ", trait)) %>% 
+  filter(!trait%in% c("chin barbel", "fang teeth", 
+                      "gland head", "internal teeth",
+                      "large teeth", "retractable teeth", 
+                      "small teeth", "ventral photophores"))
+
+ggplot(raw_dist_np, aes(x = log(values), fill = depth_layer, col= depth_layer)) +
+  geom_density(alpha = 0.2) +
+  scale_color_manual(values = c("#FEA520","#D62246","#6255B4","#3C685A"))+
+  scale_fill_manual(values = c("#FEA520","#D62246","#6255B4","#3C685A"))+
+  labs(x = " log(Trait value)", col="Depth layer", fill="Depth layer") +
+  facet_wrap(facets = vars(trait), scales = "free")+
+  theme_light()+
+  theme(strip.text.x = element_text(size = 10, face = "bold", color="black"),
+    strip.background = element_rect(fill = "white"),
+    axis.title = element_text(size = 10),
+    axis.text = element_text(size = 10))
+
+ggsave("raw_traits_distribution.png", path = "figures", dpi = 700, height = 9, width = 12)
+```
+
+## CWM - linear relationships
+- selection R² < 0.6
+```{r}
+#| echo: true
+#| label: CWM_boot_linear
+#| warning: false
+#| message: false
+#| fig-width: 11
+#| fig-height: 8
+
+linear_relation <- np_bootstrapped_moments %>%
+    mutate(trait= gsub("_"," ", trait))%>%
+  filter(
+    trait %in% c(
+      "caudal throttle width",
+      "large teeth",
+      "oral gape surface",
+      "gill outflow",
+      "internal teeth",
+      "oral gape shape",
+      "small teeth",
+      "orbital length",
+      "transversal shape",
+      "operculum volume",
+      "body depth",
+      "eye size"
+    )
+  )
+
+linear_relation$trait <- factor(
+  linear_relation$trait,
+  levels = c(
+    "caudal throttle width",
+    "large teeth",
+    "oral gape surface",
+    "gill outflow",
+    "internal teeth",
+    "oral gape shape",
+    "small teeth",
+    "orbital length",
+    "transversal shape",
+    "operculum volume",
+    "body depth",
+    "eye size"
+  )
+)
+
+ggplot(linear_relation, aes(x=depth, y=mean)) +
+  geom_point(alpha=0.1, col="grey", size=0.8) +
+  geom_smooth(method = "lm",col="#9565E5", se=T, linewidth=1, fill="#9565E5", alpha=0.5)+
+  facet_wrap(~trait, scales = "free", ncol = 4)+
+  theme_light()+
+  ggpmisc::stat_poly_eq(formula = y ~ x, 
+                        aes(label = paste(..rr.label.., ..p.value.label.. 
+                                          , ..n.label..,sep = "*`,`~")),
+                        parse = TRUE,
+                        size=2.5,
+                        label.x.npc = "right",
+                        label.y.npc = "bottom",
+                        vstep = -0.0005)+ 
+  xlab("Trawling depth (m)")+
+  ylab("Bootstrapped CWM")+
+  theme(axis.title =  element_text(size =11), 
+        strip.text = element_text(size =11, face="bold"), 
+        axis.text= element_text(size=9),
+        strip.background=element_rect(fill="white"),
+        strip.text.x = element_text(size = 10, color = "black"))
+
+ggsave("CWM_boot_linear.png", path = "figures/additional_analyses", dpi = 700, height = 6, width = 10)
+
+```
+
 
 # 2. Build a functional space using the mFD package
 
@@ -1866,22 +2217,48 @@ sp_local_di_si <- merge(
 
 head(sp_local_di_si)
 ```
-
+- _At the local scale:_ Scarcity (relative abundance of the species) as a function of the local distinctiveness (one value per depth layer for each species)
 ```{r}
 #| echo: true
 #| label: plot_local_di_si
 #| warning: false
 #| message: false
 
-plot_local_di_si <- ggplot(sp_local_di_si, aes(local_di, local_si)) +
-  geom_point(alpha = 1/3) +
+ggplot(sp_local_di_si, aes( local_si, local_di)) +
+  geom_point(alpha = 0.4, size=1) +
   labs(x = "Functional Distinctiveness", y = "Scarcity") +
+  theme_bw() +
+  # geom_smooth(method = "lm",col="#9565E5", se=T, linewidth=1, fill="#9565E5", alpha=0.5)+
+  # ggpmisc::stat_poly_eq(formula = y ~ x, 
+  #                       aes(label = paste(..rr.label.., ..p.value.label.. 
+  #                                         , ..n.label..,sep = "*`,`~")),
+  #                       parse = TRUE,
+  #                       size=2.5,
+  #                       label.x.npc = "right",
+  #                       label.y.npc = "bottom",
+  #                       vstep = -0.0005)+
+  # geom_text(aes(label = species), hjust = 0.7, vjust = -1, size = 3.5) +
+  theme(aspect.ratio = 1)
+
+ggsave("local_di_si.png", path = "figures/additional_analyses", height = 5.5, width=5.5)
+```
+
+```{r}
+#| echo: true
+#| label: plot_global_ri_ui
+#| warning: false
+#| message: false
+
+ggplot(sp_di_ri_ui, aes(Ri,Ui)) +
+  geom_point(alpha=0.6) +
+  #ggrepel::geom_text_repel(aes(label = species), max.overlaps=22, size=3) +
+  labs(x = "Functional Uniqueness", y = "Geographical Restrictedness") +
   theme_bw() +
   theme(aspect.ratio = 1)
 
-plot_local_di_si
-```
+ggsave("global_ri_ui.png", path = "figures/additional_analyses", height = 5.5, width=5.5)
 
+```
 
 __number families by depth layer__
 ```{r}
@@ -2146,6 +2523,7 @@ __log__
 
 Ui_biomass <- depth_biomass %>% 
   group_by(species) %>% 
+  replace(is.na(.), 0) %>% 
   mutate(biomass_sp = sum(biomass)) %>% 
   select(species, biomass_sp) %>% 
   distinct() %>% 
