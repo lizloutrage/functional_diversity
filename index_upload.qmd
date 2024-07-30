@@ -1,0 +1,1398 @@
+---
+title: "index_upload"
+author: "Liz Loutrage"
+format: 
+  html:
+    self-contained: true
+    code-fold: true
+editor: source
+keep-md: true
+execute:
+  warning: false
+  message : false
+toc: true
+toc-title: Sections
+toc-location: left
+page-layout: full
+theme: yeti
+fontsize: medium
+---
+
+# 1. Data preparation
+
+```{r}
+#| echo: true
+#| label: morpho_data
+#| warning: false
+
+library(dplyr)
+library(ggplot2)
+
+morphometric_data <- utils::read.csv(here::here("data", "morphometric_data.csv"), sep = ";", header = T, dec = ".")
+
+morpho_data <- morphometric_data %>%
+  select(-c(variable_abbreviation, variable_unit)) %>%
+  t() %>%
+  as.data.frame() %>%
+  janitor::row_to_names(row_number = 1) %>%
+  `rownames<-`(NULL)%>%
+  # delete for now (n=1)
+  filter(species!= "Diaphus_sp")
+
+# replace empty value by NA 
+morpho_data[morpho_data ==""] <- NA
+
+# Numeric variables
+morpho_data[, 4:23] <- sapply(morpho_data[, 4:23], as.numeric)
+```
+
+ 
+## 1.1.Data imputation  
+- mice algorithm: n imputation = 5, n iterations = 50
+```{r}
+#| echo: true
+#| label: imputation_data
+#| warning: false
+#| message: false
+#| fig-width: 13
+#| fig-height: 9
+
+#select numeric variables for imputation 
+original_data <- morpho_data %>%
+  select(1:23)
+
+imputation <-
+  mice::mice(
+    original_data,
+    m = 5,
+    maxit = 50,
+    printFlag = F
+  )
+
+imputed_data <- mice::complete(imputation)
+
+```
+
+## 1.2. Species * traits
+- calctulate functional traits 
+```{r}
+#| echo: true
+#| label: functional_traits
+#| warning: false
+#| message: false
+
+# calculate functional numeric traits
+numeric_traits <- imputed_data %>%
+  na.omit() %>%
+  select(-individual_code) %>%
+  mutate(
+    eye_size = eye_diameter / head_depth,
+    orbital_length = eye_diameter / standard_length,
+    oral_gape_surface = mouth_width * mouth_depth / body_width * body_depth,
+    oral_gape_shape = mouth_depth / mouth_width,
+    oral_gape_position = distance_upper_jaws_bottom_head / head_depth,
+    lower_jaw_length = lower_jaw_length / standard_length,
+    head_length = head_length / standard_length,
+    body_depth = body_depth / standard_length,
+    pectoral_fin_position = distance_pectoral_bottom_body / body_depth_pectoral_insertion,
+    pectoral_fin_insertion = prepectoral_length / standard_length,
+    transversal_shape = body_depth / body_width,
+    dorsal_fin_insertion = predorsal_length / standard_length,
+    eye_position = eye_height / head_depth,
+    operculum_volume = operculum_depth / operculum_width,
+    gill_outflow = operculum_width,
+    caudal_throttle_width = caudal_peduncle_min_depth
+  ) %>%
+  select(
+    species,
+    eye_size,
+    orbital_length,
+    gill_outflow,
+    oral_gape_surface,
+    oral_gape_shape,
+    oral_gape_position,
+    lower_jaw_length,
+    head_length,
+    body_depth,
+    pectoral_fin_position,
+    pectoral_fin_insertion,
+    transversal_shape,
+    caudal_throttle_width,
+    dorsal_fin_insertion,
+    eye_position,
+    operculum_volume
+  ) %>%
+  group_by(species) %>%
+  summarise(across(everything(), mean, na.rm = TRUE)) %>%
+  arrange(species)
+
+# categorical traits for species without NA
+cat_morpho <- morpho_data %>%
+  select(
+    species,
+    ventral_photophores,
+    gland_head,
+    chin_barbel,
+    small_teeth,
+    large_teeth,
+    fang_teeth,
+    retractable_teeth,
+    internal_teeth,
+    gill_raker_types,
+    oral_gape_axis
+  ) %>%
+    na.omit() %>%
+  distinct() %>%
+  arrange(species)
+
+# combined the two data frames
+fish_traits <- numeric_traits %>%
+  inner_join(cat_morpho, by = "species") %>%
+  arrange(species) %>% 
+  tibble::column_to_rownames("species")%>%
+  # assign trait type 
+  # as.factor for qualitative traits
+  mutate_if(is.character, as.factor)%>%
+  # as.ordered for ordered variables
+  mutate_at(c("gill_raker_types", "oral_gape_axis"), as.ordered)
+
+```
+
+__Data summary__
+
+```{r}
+#| echo: true
+#| label: sp_traits
+#| warning: false
+#| message: false
+
+## Display the table ----
+htmltools::tagList(DT::datatable(fish_traits))
+```
+
+__traits correlation__
+```{r}
+#| echo: true
+#| label: traits_correlation
+#| warning: false
+#| message: false
+#| fig-width: 8
+#| fig-height: 10
+
+M <-cor(numeric_traits[, c(-1)])
+
+ggcorrplot::ggcorrplot(M, hc.order = TRUE, type = "lower",
+                       lab = TRUE, tl.cex = 9, lab_size = 3)
+
+```
+
+```{r}
+#| echo: true
+#| label: taxonomic_families
+#| warning: false
+
+# list of species 
+sp_names <- c(rownames(fish_traits), "Nannobrachium_atrum", "Cyclothone", "Stomias_boa_boa")
+
+# taxonomic_families
+taxonomic_families <- sp_names %>%
+  as.data.frame() %>%
+  `colnames<-`("species") %>% 
+  mutate(
+    family = case_when(
+      species %in%
+        c(
+          "Benthosema_glaciale",
+          "Ceratoscopelus_maderensis",
+          "Diaphus_metopoclampus",
+          "Lampanyctus_ater",
+          "Lampanyctus_crocodilus",
+          "Lampanyctus_macdonaldi",
+          "Lobianchia_gemellarii",
+          "Myctophum_punctatum",
+          "Notoscopelus_bolini",
+          "Notoscopelus_kroyeri",
+          "Bolinichthys_supralateralis"
+        ) ~ "Myctophidae",
+      species %in% c(
+        "Borostomias_antarcticus",
+        "Chauliodus_sloani",
+        "Malacosteus_niger",
+        "Melanostomias_bartonbeani",
+        "Stomias_boa"
+      ) ~ "Stomiidae",
+      species %in% c(
+        "Holtbyrnia_anomala",
+        "Holtbyrnia_macrops",
+        "Maulisia_argipalla",
+        "Maulisia_mauli",
+        "Maulisia_microlepis",
+        "Normichthys_operosus",
+        "Searsia_koefoedi",
+        "Sagamichthys_schnakenbecki"
+      ) ~ "Platytroctidae",
+      species %in% c("Sigmops_bathyphilus",
+                     "Gonostoma_elongatum") ~ "Gonostomatidae",
+      species %in% c(
+        "Argyropelecus_hemigymnus",
+        "Maurolicus_muelleri",
+        "Argyropelecus_olfersii"
+      ) ~ "Sternoptychidae",
+      species == "Anoplogaster_cornuta" ~ "Anoplogastridae",
+      species %in% c("Arctozenus_risso", "Paralepis_coregonoides") ~ "Paralepididae",
+      species == "Bathylagus_euryops" ~ "Bathylagidae",
+      species == "Cyclothone_sp" ~ "Gonostomatidae",
+      species == "Derichthys_serpentinus" ~ "Derichthyidae",
+      species == "Eurypharynx_pelecanoides" ~ "Eurypharyngidae",
+      species == "Evermannella_balbo" ~ "Evermannellidae",
+      species == "Lestidiops_sphyrenoides" ~ "Lestidiidae",
+      species == "Melanostigma_atlanticum" ~ "Zoarcidae",
+      species %in% c("Photostylus_pycnopterus",
+                     "Xenodermichthys_copei") ~ "Alepocephalidae",
+      species == "Serrivomer_beanii" ~ "Serrivomeridae"
+    )
+  )%>% 
+  mutate(
+    order = case_when(
+      family =="Myctophidae" ~ "Myctophiformes",
+      family %in% c("Stomiidae","Gonostomatidae", "Sternoptychidae") ~  "Stomiiformes",
+      family %in% c("Platytroctidae","Alepocephalidae") ~ "Alepocephaliformes",
+      family == "Anoplogastridae" ~ "Trachichthyiformes",
+      family %in% c("Paralepididae","Evermannellidae","Lestidiidae") ~ "Aulopiformes",
+      family ==  "Bathylagidae" ~ "Argentiniformes",
+      family %in% c("Derichthyidae","Serrivomeridae") ~ "Anguilliformes",
+      family ==  "Eurypharyngidae" ~"Saccopharyngiformes",
+      family == "Zoarcidae" ~ "Perciformes",
+    )
+  )
+
+```
+
+## 1.3. Species * assemblages matrix
+
+__Number of trawl hauls per depth__
+
++ Epipelagic = 8 
++ Upper mesopelagic = 26 
++ Lower mesopelagic = 16 
++ Bathypelagic = 16 
+```{r}
+#| echo: true
+#| label: nb_trawl
+#| warning: false
+
+# Metadata
+metadata <-  utils::read.csv(here::here("data", "metadata.csv"), sep = ";", header = T, dec = ".")%>%
+  # calculation of standardized biomass values (vertical  trawl opening * horizontal trawl opening * distance traveled)  
+  mutate(volume_filtered = 24*58*distance)
+
+ggplot(metadata, aes(x=depth))  +
+  ylab ("Number of trawls")+
+  xlab("Immersion depth (m)")+
+  geom_histogram(binwidth=100, col="white", fill=alpha("black",0.55))+
+  theme_light()+
+  coord_flip()+ 
+  scale_x_reverse()+
+  labs(fill= "")+
+  guides(fill="none")+
+  scale_y_continuous(breaks = c(2,4,6,8,10,12))+
+  theme(axis.text.x= element_text(size=12),
+        axis.text.y= element_text(size=12),
+        axis.title.y = element_text( size=12),
+        axis.ticks = element_blank())
+
+```
+
+
+```{r}
+#| echo: false
+#| label: sp_depth_mt
+#| warning: false
+
+data_biomass_2002_2019 <- utils::read.csv(here::here("data", "Biomass_density_deep_pelagic_fish _Bay_of_Biscay.csv"), 
+                                          sep = ";", header = TRUE, dec = ",")%>%
+  rename(Code_Station = "Event.label") %>%
+  select(Code_Station, 9:290) %>%
+  mutate_all( ~ replace(., is.na(.), 0)) %>%
+  select(c(contains("..g."), Code_Station)) %>%
+  select(Code_Station, everything()) %>%
+  select(-contains("..g.m3.")) %>%
+  rename_all( ~ gsub("\\.\\.g\\.", "", .)) %>%
+  rename_all( ~ gsub("\\.", "_", .)) %>%
+  tidyr::pivot_longer(cols = -Code_Station,
+                      names_to = "Nom_Scientifique",
+                      values_to = "Tot_V_HV") %>%
+  filter(Nom_Scientifique %in% sp_names) %>%
+  filter(!Code_Station == "H0472") %>%
+  replace(is.na(.), 0)
+
+# species biomass x depth  matrix 2021 ----
+data_biomass_2021 <- utils::read.csv(here::here("data", "data_evhoe_catch_2021.csv"), sep = ";", header = T, dec = ".")%>%
+  select(Nom_Scientifique, Tot_V_HV, Code_Station)%>%
+  distinct()%>%
+  mutate(Nom_Scientifique= gsub(" ","_",Nom_Scientifique))%>%
+  filter(Nom_Scientifique%in%sp_names)
+
+# species biomass x depth  matrix 2022 ----
+data_biomass_2022 <- utils::read.csv(here::here("data", "data_evhoe_catch_2022.csv"), sep = ";", header = T, dec = ".")%>%
+  select(Nom_Scientifique, Tot_V_HV, Code_Station)%>%
+  distinct()%>%
+  mutate(Nom_Scientifique= gsub(" ","_",Nom_Scientifique))%>%
+  filter(Nom_Scientifique%in%sp_names)
+
+# #merge all matrix ----
+depth_fish_biomass <- rbind(data_biomass_2002_2019, data_biomass_2021, data_biomass_2022)%>%
+  as.data.frame()%>%
+   rename("species"="Nom_Scientifique",
+         "station"="Code_Station") %>%
+  left_join(metadata) %>%
+  select(species, Tot_V_HV, depth, volume_filtered)%>%
+  # divise biomass by the volume filtered at each trawl (g.m3)
+  mutate(biomass_cpu=(Tot_V_HV/volume_filtered)*1000)%>%
+  select(species, depth, biomass_cpu)%>%
+  # add column with depth layer
+  mutate(
+    depth_layer = case_when(
+      between(depth, 0, 174) ~ "Epipelagic",
+      between(depth, 175, 699) ~ "Upper mesopelagic",
+      between(depth, 700, 999) ~ "Lower mesopelagic",
+      between(depth, 1000, 2000) ~ "Bathypelagic"))%>%
+  replace(is.na(.), 0)%>%
+  select(-depth)%>%
+  group_by(species, depth_layer)%>%
+  mutate(biomass=sum(biomass_cpu))%>%
+  select(-c(biomass_cpu))%>%
+  distinct()%>%
+  tidyr::pivot_wider(names_from = species, values_from = biomass)%>%
+  replace(is.na(.), 0)%>%
+  tibble::column_to_rownames(var = "depth_layer")%>%
+  #change species name
+  rename("Lampanyctus_ater"="Nannobrachium_atrum")%>%
+  rename("Cyclothone_sp"="Cyclothone")%>%
+  rename("Stomias_boa"="Stomias_boa_boa") %>%
+  as.matrix()
+
+```
+
+## 1.4. Traits types
+
+The **first column** contains **traits name**. The **second column** contains
+**traits type** following this code:
+
+* **N**: nominal trait (factor variable)
+* **O**: ordinal traits (ordered variable)
+* **Q**: quantitative traits (numeric values)
+
+```{r}
+#| echo: true
+#| label: fish_traits_cat
+#| warning: false
+#| message: false
+
+fish_traits_cat <- utils::read.csv(here::here("data", "fish_traits_cat.csv"), sep = ";", header = T, dec = ".")
+htmltools::tagList(DT::datatable(fish_traits_cat))
+
+```
+
+# 2.Functional spaces
+
+## 2.1 Compute data summaries  
+
+```{r}
+#| echo: true
+#| label: sum_assem_sp
+#| warning: false
+#| message: false
+
+## Summary of the assemblages * species data.frame ----
+asb_sp_fish_summ <- mFD::asb.sp.summary(asb_sp_w = depth_fish_biomass)
+asb_sp_fish_occ  <- asb_sp_fish_summ$"asb_sp_occ"
+
+htmltools::tagList(DT::datatable(asb_sp_fish_occ))
+```
+
+## 2.2 Computing distances between species based on functional traits
+- We have non-continuous traits so we use the __Gower distance__ _(metric = "gower")_ as this method allows traits weighting.
+- __scale_euclid__ = TRUE
+```{r}
+#| echo: true
+#| label: dist_fish
+#| warning: false
+#| message: false
+
+sp_dist_fish <- mFD::funct.dist(
+  sp_tr         = fish_traits,
+  tr_cat        = fish_traits_cat,
+  metric        = "gower",
+  scale_euclid  = "scale_center",
+  ordinal_var   = "classic",
+  weight_type   = "equal",
+  stop_if_NA    = TRUE)
+
+```
+
+## 2.3 Building functional spaces and chosing the best one
+### 2.3.1 Computing several multimensional functional spaces and assessing their quality
+
+- mFD evaluates the quality of PCoA-based multidimensional spaces according to the deviation between trait-based distances and distances in the functional space (extension of Maire et al. (2015) framework). 
+
+```{r}
+#| echo: true
+#| label: fspaces_quality_fish
+#| warning: false
+#| message: false
+
+fspaces_quality_fish <- mFD::quality.fspaces(
+  sp_dist             = sp_dist_fish,
+  maxdim_pcoa         = 10,
+  deviation_weighting = "absolute",
+  fdist_scaling       = FALSE,
+  fdendro             = "average")
+
+## Quality metrics of functional spaces ----
+round(fspaces_quality_fish$"quality_fspaces", 3)
+
+```
+
+
+__Variance explained by each axis__
+```{r}
+#| echo: true
+#| label: variance_explained
+#| warning: false
+#| message: false
+
+# Extract eigenvalues information
+eigenvalues_info <- fspaces_quality_fish$"details_fspaces"$"pc_eigenvalues"
+
+# Create a dataframe to store the results
+variance_df <- data.frame(
+  PC = c("PC1", "PC2", "PC3", "PC4"),
+  VarianceExplained = c(
+    eigenvalues_info[1, "Cum_corr_eig"] * 100,
+    (eigenvalues_info[2, "Cum_corr_eig"] - eigenvalues_info[1, "Cum_corr_eig"]) * 100,
+    (eigenvalues_info[3, "Cum_corr_eig"] - eigenvalues_info[2, "Cum_corr_eig"]) * 100,
+    (eigenvalues_info[4, "Cum_corr_eig"] - eigenvalues_info[3, "Cum_corr_eig"]) * 100
+  )
+)
+
+htmltools::tagList(DT::datatable(variance_df))
+
+```
+
+
+### 2.3.2 Illustrating the quality of the functional spaces
+
+```{r}
+#| echo: true
+#| label: fspaces_quality_plot
+#| warning: false
+#| message: false
+#| fig-width: 13
+#| fig-height: 10
+
+mFD::quality.fspaces.plot(
+  fspaces_quality            = fspaces_quality_fish,
+  quality_metric             = "mad",
+  fspaces_plot               = c("tree_average", "pcoa_2d", "pcoa_3d", 
+                                 "pcoa_4d", "pcoa_5d", "pcoa_6d"),
+  name_file                  = NULL,
+  range_dist                 = NULL,
+  range_dev                  = NULL,
+  range_qdev                 = NULL,
+  gradient_deviation         = c(neg = "darkblue", nul = "grey80", pos = "darkred"),
+  gradient_deviation_quality = c(low = "yellow", high = "red"),
+  x_lab                      = "Trait-based distance")
+```
+
+### 2.3.3 Testing the correlation between functional axes and traits
+```{r}
+#| echo: true
+#| label: test_correlation
+#| warning: false
+#| message: false
+#| fig-width: 14
+#| fig-height: 9
+
+sp_faxes_coord_fish <- fspaces_quality_fish$"details_fspaces"$"sp_pc_coord"
+
+# As we have 26 traits we have to split the df to see correlation between functional axes and traits 
+# first set ----
+fish_traits_1 <- fish_traits%>%
+  select(1:9)
+
+fish_tr_faxes <- mFD::traits.faxes.cor(
+  sp_tr          = fish_traits_1, 
+  sp_faxes_coord = sp_faxes_coord_fish[ , c("PC1", "PC2", "PC3", "PC4")], 
+  plot           = T)
+
+## Print traits with significant effect ----
+fish_tr_faxes$"tr_faxes_stat"[which(fish_tr_faxes$"tr_faxes_stat"$"p.value" < 0.05), ]
+
+## Plot ----
+fish_tr_faxes$"tr_faxes_plot"
+```
+
+```{r}
+#| echo: true
+#| label: test_correlation_2
+#| warning: false
+#| message: false
+#| fig-width: 14
+#| fig-height: 9
+
+# second set ----
+fish_traits_2 <- fish_traits%>%
+  select(10:18)
+
+fish_tr_faxes_2 <- mFD::traits.faxes.cor(
+  sp_tr          = fish_traits_2, 
+  sp_faxes_coord = sp_faxes_coord_fish[ , c("PC1", "PC2", "PC3", "PC4")], 
+  plot           = T)
+
+## Print traits with significant effect ----
+fish_tr_faxes_2$"tr_faxes_stat"[which(fish_tr_faxes_2$"tr_faxes_stat"$"p.value" < 0.05), ]
+
+## Plot ----
+fish_tr_faxes_2$"tr_faxes_plot"
+```
+
+
+```{r}
+#| echo: true
+#| label: test_correlation_3
+#| warning: false
+#| message: false
+#| fig-width: 14
+#| fig-height: 9
+
+# third set ----
+fish_traits_3 <- fish_traits%>%
+  select(19:25)
+
+fish_tr_faxes_3 <- mFD::traits.faxes.cor(
+  sp_tr          = fish_traits_3, 
+  sp_faxes_coord = sp_faxes_coord_fish[ , c("PC1", "PC2", "PC3", "PC4")], 
+  plot           = T)
+
+## Print traits with significant effect ----
+fish_tr_faxes_3$"tr_faxes_stat"[which(fish_tr_faxes_3$"tr_faxes_stat"$"p.value" < 0.05), ]
+
+## Plot ----
+fish_tr_faxes_3$"tr_faxes_plot"
+
+```
+
+
+__Summary of traits with a significant effect__
+
+```{r}
+#| echo: true
+#| label: traits_effect_list
+#| warning: false
+#| message: false
+
+sp_faxes_coord_fish <- fspaces_quality_fish$"details_fspaces"$"sp_pc_coord"
+
+fish_tr_faxes <- mFD::traits.faxes.cor(
+  sp_tr          = fish_traits, 
+  sp_faxes_coord = sp_faxes_coord_fish[ , c("PC1", "PC2", "PC3", "PC4")], 
+  plot           = F)
+
+## Print traits with significant effect ----
+traits_effect <- fish_tr_faxes[which(fish_tr_faxes$p.value< 0.05),] %>% 
+  as.data.frame() %>% 
+  arrange(axis, desc(value))
+
+htmltools::tagList(DT::datatable(traits_effect))
+
+```
+
+
+## 2.4 Plotting the selected functional space and position of species
+```{r}
+#| echo: true
+#| label: plot_functional_space
+#| warning: false
+#| message: false
+#| fig-width: 8
+#| fig-height: 8
+
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(tibble)
+
+# Convert sp_faxes_coord_fish to a data frame
+sp_coord_community <- as.data.frame(sp_faxes_coord_fish[, c("PC1", "PC2")]) %>%
+  tibble::rownames_to_column(var = "species")
+
+# Depth_layer ----
+# Transform biomass data
+sp_all_layers <- depth_fish_biomass %>%
+  as.data.frame() %>%
+  tibble::rownames_to_column(var = "depth_layer") %>%
+  tidyr::pivot_longer(!depth_layer, values_to = "biomass", names_to = "species") %>%
+  filter(biomass > 0)
+
+# Create a list to store data frames for each depth layer
+all_data_layers <- lapply(unique(sp_all_layers$depth_layer), function(layer) {
+  sp_layer <- sp_all_layers %>%
+    filter(depth_layer == layer)
+  
+  # Mark presence or absence
+  sp_coord_layer <- sp_coord_community %>%
+    mutate(layer_presence = ifelse(species %in% sp_layer$species, "yes", "no")) %>%
+    mutate(depth_layer = layer)
+  
+  return(sp_coord_layer)
+})
+
+# Combine all layers into one data frame
+sp_coord_community_all_layers <- bind_rows(all_data_layers)
+
+# Function to calculate the convex hull for a given data frame
+calculate_hull <- function(data) {
+  if (nrow(data) < 3) return(data)  # Handle cases with fewer than 3 points
+  data %>%
+    slice(chull(PC1, PC2))
+}
+
+# Initialize lists to store hulls
+hull_all_combined <- NULL
+hull_layer_combined <- NULL
+
+for(layer in unique(sp_coord_community_all_layers$depth_layer)) {
+  sp_layer <- sp_coord_community_all_layers %>%
+    filter(depth_layer == layer)
+  
+  hull_all <- calculate_hull(sp_layer) %>%
+    mutate(depth_layer = layer, type = "all")
+  
+  hull_layer <- calculate_hull(sp_layer %>% filter(layer_presence == "yes")) %>%
+    mutate(depth_layer = layer, type = "present")
+  
+  hull_all_combined <- bind_rows(hull_all_combined, hull_all)
+  hull_layer_combined <- bind_rows(hull_layer_combined, hull_layer)
+}
+
+# Define depth layer levels in desired order
+depth_levels <- c("Epipelagic", "Upper mesopelagic", "Lower mesopelagic", "Bathypelagic")
+
+# Ensure depth_layer is a factor with specified levels
+sp_coord_community_all_layers$depth_layer <- factor(sp_coord_community_all_layers$depth_layer, levels = depth_levels)
+hull_all_combined$depth_layer <- factor(hull_all_combined$depth_layer, levels = depth_levels)
+hull_layer_combined$depth_layer <- factor(hull_layer_combined$depth_layer, levels = depth_levels)
+
+# Define colors for each depth layer
+depth_colors <- c("Epipelagic" = "#FEA520", 
+                  "Upper mesopelagic" = "#D62246", 
+                  "Lower mesopelagic" = "#6255B4", 
+                  "Bathypelagic" = "#3C685A")
+
+# Plotting
+plot_depth <- ggplot() +
+  # Plot present species
+  geom_point(data = sp_coord_community_all_layers %>% filter(layer_presence == "yes"), 
+             aes(PC1, PC2, col = depth_layer, shape = layer_presence), size = 2, alpha=0.8) +
+  # Plot absent species
+  geom_point(data = sp_coord_community_all_layers %>% filter(layer_presence == "no"), 
+             aes(PC1, PC2), col = "grey", shape = 19, size = 2, alpha = 0.6) +
+  # Plot hulls
+  geom_polygon(data = hull_all_combined, aes(x = PC1, y = PC2), 
+               fill = "lightgrey", alpha = 0.17) +
+  geom_polygon(data = hull_layer_combined, aes(x = PC1, y = PC2, group = depth_layer, fill = depth_layer), 
+               alpha = 0.2) +
+  theme_light() +
+  scale_color_manual(values = depth_colors) +
+  scale_fill_manual(values = depth_colors) +
+  guides(col = "none", shape = "none", fill = "none") +
+  facet_wrap(~ depth_layer, nrow=1 ) +  
+  theme(
+    strip.text.x = element_text(size = 14, color = "gray20"),
+    strip.background = element_rect(fill = "white"),
+    aspect.ratio = 1,
+    legend.title = element_text(size = 12),
+    legend.text = element_text(size = 12),
+    panel.grid.minor = element_blank(),
+    panel.grid.major = element_blank()
+  )
+
+
+beta_fd_indices_fish <- mFD::beta.fd.multidim(
+  sp_faxes_coord   = sp_faxes_coord_fish[ , c("PC1", "PC2", "PC3", "PC4")],
+  asb_sp_occ       = asb_sp_fish_occ,
+  check_input      = TRUE,
+  beta_family      = c("Jaccard"),
+  details_returned = F)
+
+vertices_community <-beta_fd_indices_fish$"details"$"asb_vertices"$Bathypelagic 
+
+sp_coord_community <- as.data.frame(sp_faxes_coord_fish[, 1:2]) %>% 
+  tibble::rownames_to_column(var = "species") %>% 
+  mutate(vertices=case_when(species%in%vertices_community~"vertice",
+                            !species%in%vertices_community~"not_vertice")) 
+
+hull <- sp_coord_community%>% 
+  slice(chull(PC1, PC2))
+
+plot_com <- ggplot(data = sp_coord_community,aes(PC1, PC2)) +
+  scale_color_manual(values = c("grey", "black"))+
+  geom_point(size = 2.5, alpha=0.8, aes( shape=vertices, col= vertices)) +
+  geom_polygon(data=hull, aes(x = PC1, y = PC2), 
+               fill = "lightgrey", alpha = 0.17) +
+  theme_light() +
+  geom_hline(yintercept = 0, linetype = 2, col = "gray45") +
+  geom_vline(xintercept = 0, linetype = 2, col = "gray45") +
+  guides(col = "none", shape = "none", fill = "none") +
+  theme(
+    strip.text.x = element_text(size = 14, color = "gray20"),
+    strip.background = element_rect(fill = "white"),
+    aspect.ratio = 1,
+    legend.title = element_text(size = 12),
+    legend.text = element_text(size = 12),
+    panel.grid.minor = element_blank(),
+    panel.grid.major = element_blank()
+  )
+
+ggpubr::ggarrange(
+  plot_com,   
+  plot_depth, 
+  nrow = 2
+) 
+
+ggsave("functional_space.png", path = "figures",
+       dpi = 800, height = 8, width = 10)
+
+
+```
+
+# 3. SES Functional diversity indices 
+
+- __Standard Effect Size (SES):__ to eliminate the influence of species richness on the functional diversity indices (Mouchet et al., 2010). Measures the deviation from the random expectation in standard deviation units
+
+- __null model frequency__: Randomize community data matrix abundances (here biomasss) within species (maintains species occurence frequency)
+
+- __FRic Functional Richness__: the proportion of functional space filled by species of the studied assemblage, i.e. the volume inside the convex-hull shaping species. To compute FRic the number of species must be at least higher than the number of functional axis + 1.
+
+- __FDis Functional Dispersion__: the biomass weighted deviation of species traits values from the center of the functional space filled by the assemblage i.e. the biomass-weighted mean distance to the biomass-weighted mean trait values of the assemblage.
+
+- __FDiv Functional Divergence__: the proportion of the biomass supported by the species with the most extreme functional traits i.e. the ones located close to the edge of the convex-hull filled by the assemblage.
+
+- __FEve Functional Evenness__: the regularity of biomass distribution in the functional space using the Minimum Spanning Tree linking all species present in the assemblage.
+
+```{r}
+#| echo: true
+#| label: ses_mfd
+#| warning: false
+#| message: false
+#| fig-width: 10
+#| fig-height: 8
+
+# by depth
+station_sp <-
+  rbind(data_biomass_2002_2019, data_biomass_2021, data_biomass_2022) %>%
+  as.data.frame() %>%
+  rename("species" = "Nom_Scientifique",
+         "station" = "Code_Station") %>%
+  left_join(metadata) %>%
+  select(species, Tot_V_HV, volume_filtered, station) %>%
+  # Divide biomass by the volume filtered at each trawl (g.m3)
+  mutate(biomass_cpu = (Tot_V_HV / volume_filtered) * 1000) %>%
+  select(species, biomass_cpu, station) %>%
+  replace(is.na(.), 0) %>%
+  group_by(species, station) %>%
+  mutate(biomass = sum(biomass_cpu)) %>%
+  select(-biomass_cpu) %>%
+  distinct() %>%
+  tidyr::pivot_wider(names_from = species, values_from = biomass) %>%
+  replace(is.na(.), 0) %>%
+  arrange(station) %>%
+  filter(!station %in% c("H0411", "L0731", "L0736")) %>%
+  tibble::column_to_rownames(var = "station") %>%
+  # Change species names
+  rename("Lampanyctus_ater" = "Nannobrachium_atrum") %>%
+  rename("Cyclothone_sp" = "Cyclothone") %>%
+  rename("Stomias_boa" = "Stomias_boa_boa") %>%
+  select(order(colnames(.))) %>%
+  as.matrix()
+
+# if we want only presence-absence
+#station_sp <- replace(station_sp, station_sp > 0, 1)
+
+# Calculate functional diversity for the observed data ----
+obsFD <- mFD::alpha.fd.multidim(
+  sp_faxes_coord = sp_faxes_coord_fish[, c("PC1", "PC2", "PC3", "PC4")],
+  asb_sp_w = station_sp,
+  scaling = TRUE,
+  check_input = TRUE,
+  details_returned = F
+)
+
+obsFD_div <- obsFD$functional_diversity_indices
+
+# Null model ----
+# Define the number of replications
+nb_rep <- 10
+
+# Initialize a list to store results of random functional diversity calculations for each index
+indices_names <- colnames(obsFD_div)
+resultsRandomFD <- list()
+
+for (index_name in indices_names) {
+  resultsRandomFD[[index_name]] <- matrix(
+    NA,
+    nrow = nrow(station_sp),
+    ncol = nb_rep,
+    dimnames = list(rownames(station_sp), paste0("Sim.", 1:nb_rep))
+  )
+}
+
+# Perform randomization and calculate functional diversity for each replication
+for (rep in 1:nb_rep) {
+  randomize_mx <- picante::randomizeMatrix(samp = station_sp,
+                                           null.model = "frequency",
+                                           iterations = 10)
+  
+  simFD_cal <- mFD::alpha.fd.multidim(
+    sp_faxes_coord = sp_faxes_coord_fish[, c("PC1", "PC2", "PC3", "PC4")],
+    asb_sp_w = randomize_mx,
+    scaling = TRUE,
+    check_input = TRUE,
+    details_returned = F
+  )
+  
+  simFD_div <- simFD_cal$functional_diversity_indices
+  
+  for (index_name in indices_names) {
+    simFD_index <- simFD_div[, index_name]
+    
+    # Ensure that simFD_index has the same length as the number of rows in station_sp
+    if (length(simFD_index) == nrow(station_sp)) {
+      resultsRandomFD[[index_name]][, rep] <- simFD_index
+    } else {
+      stop(
+        paste(
+          "The length of",
+          index_name,
+          "does not match the number of rows in station_sp"
+        )
+      )
+    }
+  }
+}
+
+# Initialize dataframes to store mean, standard deviation, effect size, and standardized effect size
+meanNullFD <-
+  data.frame(matrix(
+    NA,
+    nrow = nrow(station_sp),
+    ncol = length(indices_names)
+  ))
+sdNullFD <-
+  data.frame(matrix(
+    NA,
+    nrow = nrow(station_sp),
+    ncol = length(indices_names)
+  ))
+ES_FD <-
+  data.frame(matrix(
+    NA,
+    nrow = nrow(station_sp),
+    ncol = length(indices_names)
+  ))
+SES_FD <-
+  data.frame(matrix(
+    NA,
+    nrow = nrow(station_sp),
+    ncol = length(indices_names)
+  ))
+
+# Set column names for the dataframes
+colnames(meanNullFD) <- indices_names
+colnames(sdNullFD) <- indices_names
+colnames(ES_FD) <- indices_names
+colnames(SES_FD) <- indices_names
+
+# Calculate statistics for each index
+for (index_name in indices_names) {
+  # Calculate mean and standard deviation of null model FD values for each index
+  meanNullFD[, index_name] <-
+    rowMeans(resultsRandomFD[[index_name]], na.rm = TRUE)
+  sdNullFD[, index_name] <-
+    apply(resultsRandomFD[[index_name]], 1, sd, na.rm = TRUE)
+  
+  # Calculate effect size and standardized effect size for each index
+  ES_FD[, index_name] <-
+    obsFD_div[, index_name] - meanNullFD[, index_name]
+  SES_FD[, index_name] <-
+    ES_FD[, index_name] / sdNullFD[, index_name]
+}
+
+# Combine all results into a single dataframe
+results_df <- cbind(
+  obsFD_div,
+  meanNullFD = meanNullFD,
+  sdNullFD = sdNullFD,
+  ES_FD = ES_FD,
+  SES_FD = SES_FD
+)
+
+# Add row names
+rownames(results_df) <- rownames(station_sp)
+
+# Plot  ----
+# Output the results dataframe
+results_df_plot <- results_df %>%
+  tibble::rownames_to_column(var = "station") %>%
+  inner_join(metadata %>% select(station, depth), by = "station") %>%
+  mutate(
+    depth_layer = case_when(
+      between(depth, 0, 174) ~ "Epipelagic",
+      between(depth, 175, 699) ~ "Upper mesopelagic",
+      between(depth, 700, 999) ~ "Lower mesopelagic",
+      between(depth, 1000, 2000) ~ "Bathypelagic"
+    )
+  ) %>%
+  select(-station) %>%
+  tidyr::pivot_longer(!c(depth, depth_layer),
+                      values_to = "values",
+                      names_to = "indice") %>%
+  mutate(indice = stringr::str_replace(indice, "^SES_", "")) %>%
+  filter(indice %in% c("FD.fric",
+                       "FD.fdis",
+                       "FD.feve",
+                       "FD.fdiv"))
+
+results_df_plot$depth_layer <- factor(
+  results_df_plot$depth_layer,
+  levels = c(
+    "Epipelagic",
+    "Upper mesopelagic",
+    "Lower mesopelagic",
+    "Bathypelagic"
+  )
+)
+results_df_plot$indice <- factor(
+  results_df_plot$indice,
+  levels = c("FD.fric",
+             "FD.fdis",
+             "FD.fdiv",
+             "FD.feve"),
+  labels = c("Richness", "Dispersion", "Divergence", "Evenness")
+)
+
+ggplot(results_df_plot, aes(x = depth_layer, y = values, fill = depth_layer)) +
+  facet_wrap(~indice, scales = "free") +
+  geom_point(alpha = 0.5, size = 1, position = position_jitter(width = 0.2), aes(col=depth_layer)) +
+  geom_boxplot(alpha = 0.1, outlier.shape = NA, width = 0.5, aes(col=depth_layer, fill=depth_layer))+
+  scale_color_manual(values = c("#FEA520", "#D62246", "#6255B4", "#3C685A")) +
+  scale_fill_manual(values = c("#FEA520", "#D62246", "#6255B4", "#3C685A")) +
+  labs(
+    x = "",
+    y = "Standard Effect Size (SES)"
+  ) +
+  theme_light() +
+  theme(axis.text.x = element_blank(),
+        strip.text.x = element_text(
+          size = 13,
+          face = "bold",
+          color = "gray20"
+        ),
+        strip.background = element_rect(fill = "white"),
+        axis.title = element_text(size = 13),
+        axis.text = element_text(size = 13))+
+  geom_hline(yintercept = 0, linetype = "dashed", color = "black", linewidth = 0.8)+
+  guides(col="none", fill="none")
+
+ggsave("SES_indices.png", path = "figures", dpi = 700, height = 6, width = 9)
+
+```
+
+
+# 4. CWM 
+
+## 4.1. CWM booststrap by depth layer 
+
+- each trawl is a replica 
+
+- non parametric Bootstrap 
+
+```{r}
+#| echo: true
+#| label: CWM_boot
+#| warning: false
+#| message: false
+#| fig-width: 11
+#| fig-height: 9
+
+spxcom.matrix <-  depth_fish_biomass %>% 
+  t() %>% 
+  as.data.frame() %>% 
+  relocate("Epipelagic", "Upper mesopelagic", "Lower mesopelagic","Bathypelagic" ) %>% 
+  tibble::rownames_to_column("species") %>% 
+  arrange(species) %>% 
+  tibble::column_to_rownames("species") %>% 
+  as.matrix()
+
+spxtraits.matrix <- fish_traits %>%
+  mutate(across(16:23, ~ case_when(. == "P" ~ 1, 
+                                   . == "A" ~ 0, 
+                                   TRUE ~ as.numeric(.))),
+         across(24, ~ case_when(. == "A" ~ 1, 
+                                . == "B" ~ 2, 
+                                . == "C" ~ 3, 
+                                TRUE ~ as.numeric(.)))) %>% 
+  select(-c(gill_raker_types, oral_gape_axis)) %>% 
+  as.matrix()
+
+# Remove the "[,1]" suffix from column names
+names(spxtraits.matrix) <- gsub("[,1]", "", names(spxtraits.matrix))
+
+#check rownames
+#rownames(spxtraits.matrix) == rownames(spxcom.matrix)
+
+result_CWM <- FD::functcomp(spxtraits.matrix, t(spxcom.matrix)) 
+#FD::functcomp(spxtraits.matrix, t(spxcom.matrix), CWM.type = "all")
+
+#  Calculate Total biomass
+total_biomass <- colSums(spxcom.matrix)
+
+#  Calculate Relative biomass
+sp_rel_biomass <- t(spxcom.matrix) / total_biomass
+
+# Transpose the Relative biomass Matrix for Display
+t_sp_rel_biomass <- t(sp_rel_biomass)
+
+total_sum <- colSums(t(sp_rel_biomass))
+
+# Initialize an empty data frame to store results
+CWM_df <- data.frame(
+  depth_layer = character(),
+  trait = character(),
+  total_sum = numeric(),
+  weighted_mean = numeric(),
+  stringsAsFactors = FALSE
+)
+
+library(traitstrap)
+
+# Trait 
+trait_boot <- morpho_data%>% 
+  inner_join(metadata) %>% 
+  select(-c(individual_code, years, longitude_start,
+            latitude_start, longitude_end, longitude_end,
+            volume_filtered, distance)) %>% 
+  mutate(
+    eye_size = eye_diameter / head_depth,
+    orbital_length = eye_diameter / standard_length,
+    oral_gape_surface = mouth_width * mouth_depth / body_width * body_depth,
+    oral_gape_shape = mouth_depth / mouth_width,
+    oral_gape_position = distance_upper_jaws_bottom_head / head_depth,
+    lower_jaw_length = lower_jaw_length / standard_length,
+    head_length = head_length / standard_length,
+    body_depth = body_depth / standard_length,
+    pectoral_fin_position = distance_pectoral_bottom_body / body_depth_pectoral_insertion,
+    pectoral_fin_insertion = prepectoral_length / standard_length,
+    transversal_shape = body_depth / body_width,
+    dorsal_fin_insertion = predorsal_length / standard_length,
+    eye_position = eye_height / head_depth,
+    operculum_volume = operculum_depth / operculum_width,
+    gill_outflow = operculum_width,
+    caudal_throttle_width = caudal_peduncle_min_depth
+  ) %>%
+  select(
+    depth,
+    species,
+    eye_size,
+    orbital_length,
+    gill_outflow,
+    oral_gape_surface,
+    oral_gape_shape,
+    oral_gape_position,
+    lower_jaw_length,
+    head_length,
+    body_depth,
+    pectoral_fin_position,
+    pectoral_fin_insertion,
+    transversal_shape,
+    caudal_throttle_width,
+    dorsal_fin_insertion,
+    eye_position,
+    operculum_volume,
+    ventral_photophores, 
+    gland_head,
+    chin_barbel, 
+    small_teeth, 
+    large_teeth, 
+    fang_teeth, 
+    retractable_teeth, 
+    internal_teeth
+  ) %>%
+  mutate_at(vars(ventral_photophores, 
+                 gland_head,
+                 chin_barbel, 
+                 small_teeth, 
+                 large_teeth, 
+                 fang_teeth, 
+                 retractable_teeth, 
+                 internal_teeth), 
+            funs(ifelse(. == "P", 1, ifelse(. == "A", 0, .)))) %>% 
+  mutate(across(all_of(c("ventral_photophores", 
+                         "gland_head",
+                         "chin_barbel", 
+                         "small_teeth", 
+                         "large_teeth", 
+                         "fang_teeth", 
+                         "retractable_teeth", 
+                         "internal_teeth")), as.numeric)) %>% 
+  tidyr::pivot_longer(!c(species,depth), names_to = "trait", values_to = "values")%>%
+  # add column with depth layer
+  mutate(
+    depth_layer = case_when(
+      between(depth, 0, 174) ~ "Epipelagic",
+      between(depth, 175, 699) ~ "Upper mesopelagic",
+      between(depth, 700, 999) ~ "Lower mesopelagic",
+      between(depth, 1000, 2000) ~ "Bathypelagic"))
+
+# Community 
+community <-  rbind(data_biomass_2002_2019, data_biomass_2021, data_biomass_2022)%>%
+  as.data.frame()%>%
+  rename("species"="Nom_Scientifique",
+         "station"="Code_Station") %>%
+  left_join(metadata) %>%
+  select(species, Tot_V_HV, depth, volume_filtered)%>%
+  # add column with depth layer
+  mutate(
+    depth_layer = case_when(
+      between(depth, 0, 174) ~ "Epipelagic",
+      between(depth, 175, 699) ~ "Upper mesopelagic",
+      between(depth, 700, 999) ~ "Lower mesopelagic",
+      between(depth, 1000, 2000) ~ "Bathypelagic"))%>%
+  replace(is.na(.), 0)%>%
+  group_by(species, depth)%>%
+  mutate(biomass=sum(Tot_V_HV))%>%
+  select(-c(Tot_V_HV))%>%
+  distinct()%>%
+  select(-c(volume_filtered)) %>% 
+  filter(biomass>0) %>% 
+  mutate(species = case_when(
+    species == "Nannobrachium_atrum"~"Lampanyctus_ater",
+    species == "Cyclothone"~"Cyclothone_sp",
+    species == "Stomias_boa_boa"~"Stomias_boa",
+    TRUE ~ species
+  )) 
+
+trait_filling <- trait_fill(
+  # input data (mandatory)
+  comm = community,
+  traits = trait_boot,
+  
+  # specifies columns in your data (mandatory)
+  abundance_col = "biomass",
+  taxon_col = "species",
+  trait_col = "trait",
+  value_col = "values",
+  
+  # specifies sampling hierarchy
+  scale_hierarchy = c("depth_layer", "depth"),
+  
+  # min number of samples
+  min_n_in_sample = 5
+)
+
+# run nonparametric bootstrapping
+np_bootstrapped_moments <- trait_np_bootstrap(
+  trait_filling, 
+  nrep = 100
+)
+
+np_bootstrapped_moments_plot <- np_bootstrapped_moments %>% 
+  mutate(trait= gsub("_"," ", trait))%>%
+  filter(
+    trait %in% c(
+      "caudal throttle width",
+      "oral gape surface",
+       "gill outflow",
+      "large teeth",
+       "small teeth",
+      "orbital length",  
+      "eye size",
+      "transversal shape",
+      "operculum volume",
+      "ventral photophores",
+      "internal teeth",
+      "eye position",
+      "oral gape shape"
+    )
+  )
+
+np_bootstrapped_moments_plot$trait <- factor(
+  np_bootstrapped_moments_plot$trait,
+  levels = c(
+    "caudal throttle width",
+     "oral gape surface",
+    "gill outflow",
+    "large teeth",
+    "small teeth",
+    "orbital length",
+    "eye size",
+    "transversal shape",
+    "operculum volume",
+    "ventral photophores",
+    "internal teeth",
+    "eye position",
+    "oral gape shape"
+  )
+)
+
+np_bootstrapped_moments_plot$depth_layer <- factor(np_bootstrapped_moments_plot$depth_layer, 
+                                                   levels = c("Epipelagic", "Upper mesopelagic", "Lower mesopelagic", "Bathypelagic"))
+
+# Mean
+ggplot(np_bootstrapped_moments_plot, aes(x=depth_layer, y=mean)) +
+  geom_boxplot(aes(col=depth_layer, fill=depth_layer), alpha=0.08) +
+  scale_fill_manual(values = c("#FEA520","#D62246","#6255B4","#3C685A"))+
+  scale_color_manual(values = c("#FEA520","#D62246","#6255B4","#3C685A"))+
+  guides(col="none", fill="none")+
+  labs(y="Bootstrapped CWM")+
+  facet_wrap(~trait, scales = "free")+
+  theme_light()+
+  theme(axis.text.x = element_blank(), 
+        axis.title.x = element_blank(), 
+        panel.grid.minor =  element_blank(),
+        axis.title.y.left =  element_text(size =14), 
+        strip.text = element_text( face="bold"),  
+        axis.title.y = element_text(size=15),
+        axis.text.y = element_text(size=14),
+        strip.background=element_rect(fill="white"),
+        strip.text.x = element_text(size = 14, color = "black"))
+
+ggsave("CWM_boot.png", path = "figures", dpi = 700, height = 10, width = 12)
+```
+
+## 4.2. PCA CWM 
+
+```{r}
+#| echo: true
+#| label: CWM_PCA
+#| warning: false
+#| message: false
+#| fig-width: 9
+#| fig-height: 6
+
+sum_boot_moment <- trait_summarise_boot_moments(
+  np_bootstrapped_moments
+) %>% 
+  ungroup() %>% 
+  filter(
+    trait %in% c(
+      "caudal_throttle width",
+      "oral_gape_surface",
+      "gill_outflow",
+      "large_teeth",
+      "small_teeth",
+      "orbital_length",  
+      "eye_size",
+      "transversal_shape",
+      "operculum_volume",
+      "ventral_photophores",
+      "internal_teeth",
+      "eye_position",
+      "oral_gape_shape"
+    )
+  ) %>% 
+  mutate(trait= gsub("_"," ", trait)) %>% 
+  select(c(trait, depth_layer, mean)) %>% 
+  group_by(
+    depth_layer, trait
+  ) %>% 
+  summarise(mean_value= mean(mean)) %>% 
+  distinct() %>% 
+  ungroup() %>% 
+  tidyr::pivot_wider(id_cols=depth_layer, values_from = "mean_value", names_from = "trait") %>% 
+  tibble::column_to_rownames(var = "depth_layer")
+
+res.pca <- FactoMineR::PCA(sum_boot_moment, graph = FALSE)
+
+factoextra::fviz_pca_biplot(res.pca, repel = TRUE,
+                            col.var = "gray50", 
+                            col.ind = "black", 
+                            pointsize = 2,
+                            arrowsize = 0.2,
+                            title = "", 
+                            label = "var")+
+  theme_light()+
+  theme(panel.grid.minor =  element_blank(),
+        panel.grid.major = element_blank())
+
+ggsave("PCA_CWM.png", path = "figures", dpi = 700, height = 5, width = 7)
+
+```
+
+# 5. Functional rarity
+
+- Uniqueness - geographical restrectiveness
+```{r}
+#| label: uniqueness_fig
+#| echo: false
+#| fig-width: 9
+#| fig-height: 9
+
+depth_distribution <- rbind(data_biomass_2002_2019, data_biomass_2021, data_biomass_2022)%>%
+  as.data.frame()%>%
+  rename("species"="Nom_Scientifique",
+         "station"="Code_Station") %>%
+  left_join(metadata) %>%
+  select(species, Tot_V_HV, depth, volume_filtered)%>%
+  # divise biomass by the volume filtered at each trawl (g.m3)
+  mutate(biomass_cpu=(Tot_V_HV/volume_filtered)*1000)%>%
+  select(species, depth, biomass_cpu)%>%
+  replace(is.na(.), 0)%>%
+  group_by(species, depth)%>%
+  mutate(biomass=sum(biomass_cpu))%>%
+  select(-c(biomass_cpu))%>%
+  distinct()%>%
+  tidyr::pivot_wider(names_from = species, values_from = biomass)%>%
+  replace(is.na(.), 0)%>%
+  tibble::column_to_rownames(var = "depth")%>%
+  #change species name
+  rename("Lampanyctus_ater"="Nannobrachium_atrum")%>%
+  rename("Cyclothone_sp"="Cyclothone")%>%
+  rename("Stomias_boa"="Stomias_boa_boa") %>%
+  as.matrix()
+
+ri <- funrar::restrictedness(depth_distribution)
+
+sp_ui <- funrar::uniqueness(
+  pres_matrix = depth_fish_biomass,
+  as.matrix(sp_dist_fish)
+)
+
+sp_ri_ui <- sp_ui %>% 
+  inner_join(ri) %>% 
+  inner_join(taxonomic_families) %>% 
+  mutate(species= gsub("_"," ",species))
+
+stat <- sp_ri_ui %>%  
+  summarise(med_ui = median(Ui),
+            med_ri =median(Ri),
+            mean_ui = mean(Ui),
+            mean_ri = mean(Ri)) 
+
+ggplot(sp_ri_ui, aes(Ri,Ui))+
+  geom_point(size = 2.7, aes(shape=order))+
+  ggrepel::geom_text_repel(aes(label = species), col="grey70", max.overlaps=3, size=4.5)+
+  scale_shape_manual(values = c(8, 16, 7, 17, 19, 15, 3, 25))+
+  labs(y = "Functional Uniqueness", x = "Geographical Restrictedness", shape="Taxonomic order")+
+  theme_bw()+
+  geom_hline(yintercept = stat$mean_ui, linetype = "dashed", color = "black", linewidth = 0.8)+
+  geom_vline(xintercept = stat$mean_ri, linetype = "dashed", color = "black", linewidth = 0.8)+
+  theme(aspect.ratio = 1,
+        axis.title = element_text(size=15),
+        axis.text = element_text(size=14),
+        legend.title = element_text(size=15),
+        legend.text = element_text(size=14))
+
+ggsave("Uniqueness_Ri.png", path = "figures", dpi = 700, height = 8, width = 10)
+```
