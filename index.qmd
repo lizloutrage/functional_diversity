@@ -878,7 +878,7 @@ ggplot(np_bootstrapped_moments_plot, aes(x=depth_layer, y=mean)) +
         strip.background=element_rect(fill="white"),
         strip.text.x = element_text(size = 10, color = "black"))
 
-ggsave("CWM_boot.png", path = "figures/additional_analyses", dpi = 700, height = 8, width = 12)
+ggsave("CWM_boot.png", path = "figures", dpi = 700, height = 8, width = 12)
 
 ```
 
@@ -1037,7 +1037,7 @@ ggplot(linear_relation, aes(x=depth, y=mean)) +
         strip.background=element_rect(fill="white"),
         strip.text.x = element_text(size = 10, color = "black"))
 
-ggsave("CWM_boot_linear.png", path = "figures/additional_analyses", dpi = 700, height = 6, width = 10)
+ggsave("CWM_boot_linear.png", path = "figures", dpi = 700, height = 6, width = 10)
 
 ```
 
@@ -1870,7 +1870,7 @@ patchwork_FRic <- (plot_FRic[[1]] + patchwork::plot_spacer() + patchwork::plot_s
                          guides = "collect")
 patchwork_FRic
 
-ggsave("beta_diversity.png", path = "figures/additional_analyses", height = 9, width = 10)
+ggsave("beta_diversity.png", path = "figures", height = 9, width = 10)
 ```
 
 __$\alpha$ & $\beta$ diversity__
@@ -2041,7 +2041,7 @@ ggplot(diversity_indices, aes(x = depth, y=value))+
         strip.background=element_rect(fill="white"),
         strip.text.x = element_text(size = 11, face = "bold", color = "black"))
 
-ggsave("diversity_indices_lm.png", path = "figures/additional_analyses", height = 7, width = 10)
+ggsave("diversity_indices_lm.png", path = "figures", height = 7, width = 10)
 ```
 
 
@@ -2071,7 +2071,7 @@ ggplot(diversity_indices, aes(x =depth_layer, y=value))+
         strip.background=element_rect(fill="white"),
         strip.text.x = element_text(size = 11, face = "bold", color = "black"))
 
-ggsave("diversity_indices.png", path = "figures/additional_analyses", height = 7, width = 12)
+ggsave("diversity_indices.png", path = "figures", height = 7, width = 12)
 ```
 
 # 4. Functional rarity
@@ -2453,7 +2453,7 @@ ggplot(sp_local_di_si, aes( local_si, local_di)) +
   # geom_text(aes(label = species), hjust = 0.7, vjust = -1, size = 3.5) +
   theme(aspect.ratio = 1)
 
-ggsave("local_di_si.png", path = "figures/additional_analyses", height = 5.5, width=5.5)
+ggsave("local_di_si.png", path = "figures", height = 5.5, width=5.5)
 ```
 
 ```{r}
@@ -2469,7 +2469,7 @@ ggplot(sp_di_ri_ui, aes(Ri,Ui)) +
   theme_bw() +
   theme(aspect.ratio = 1)
 
-ggsave("global_ri_ui.png", path = "figures/additional_analyses", height = 5.5, width=5.5)
+ggsave("global_ri_ui.png", path = "figures", height = 5.5, width=5.5)
 
 ```
 

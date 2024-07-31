@@ -26,6 +26,7 @@ fontsize: medium
 #| warning: false
 
 library(dplyr)
+library(traitstrap)
 library(ggplot2)
 
 morphometric_data <- utils::read.csv(here::here("data", "morphometric_data.csv"), sep = ";", header = T, dec = ".")
@@ -136,7 +137,7 @@ cat_morpho <- morpho_data %>%
     small_teeth,
     large_teeth,
     fang_teeth,
-    retractable_teeth,
+   # retractable_teeth,
     internal_teeth,
     gill_raker_types,
     oral_gape_axis
@@ -389,7 +390,8 @@ The **first column** contains **traits name**. The **second column** contains
 #| warning: false
 #| message: false
 
-fish_traits_cat <- utils::read.csv(here::here("data", "fish_traits_cat.csv"), sep = ";", header = T, dec = ".")
+fish_traits_cat <- utils::read.csv(here::here("data", "fish_traits_cat.csv"), sep = ";", header = T, dec = ".") %>% 
+  filter(trait_name!="retractable_teeth")
 htmltools::tagList(DT::datatable(fish_traits_cat))
 
 ```
@@ -724,7 +726,7 @@ beta_fd_indices_fish <- mFD::beta.fd.multidim(
   asb_sp_occ       = asb_sp_fish_occ,
   check_input      = TRUE,
   beta_family      = c("Jaccard"),
-  details_returned = F)
+  details_returned = T)
 
 vertices_community <-beta_fd_indices_fish$"details"$"asb_vertices"$Bathypelagic 
 
@@ -756,6 +758,7 @@ plot_com <- ggplot(data = sp_coord_community,aes(PC1, PC2)) +
   )
 
 ggpubr::ggarrange(
+  labels = c("A","B"),
   plot_com,   
   plot_depth, 
   nrow = 2
@@ -979,7 +982,12 @@ results_df_plot$indice <- factor(
              "FD.fdis",
              "FD.fdiv",
              "FD.feve"),
-  labels = c("Richness", "Dispersion", "Divergence", "Evenness")
+  labels = c(
+    "Functional richness",
+    "Functional dispersion",
+    "Functional divergence",
+    "Functional evenness"
+  )
 )
 
 ggplot(results_df_plot, aes(x = depth_layer, y = values, fill = depth_layer)) +
@@ -1005,7 +1013,8 @@ ggplot(results_df_plot, aes(x = depth_layer, y = values, fill = depth_layer)) +
   geom_hline(yintercept = 0, linetype = "dashed", color = "black", linewidth = 0.8)+
   guides(col="none", fill="none")
 
-ggsave("SES_indices.png", path = "figures", dpi = 700, height = 6, width = 9)
+
+ggsave("SES_indices.png", path = "figures", dpi = 700, height = 7, width = 9)
 
 ```
 
@@ -1025,57 +1034,6 @@ ggsave("SES_indices.png", path = "figures", dpi = 700, height = 6, width = 9)
 #| message: false
 #| fig-width: 11
 #| fig-height: 9
-
-spxcom.matrix <-  depth_fish_biomass %>% 
-  t() %>% 
-  as.data.frame() %>% 
-  relocate("Epipelagic", "Upper mesopelagic", "Lower mesopelagic","Bathypelagic" ) %>% 
-  tibble::rownames_to_column("species") %>% 
-  arrange(species) %>% 
-  tibble::column_to_rownames("species") %>% 
-  as.matrix()
-
-spxtraits.matrix <- fish_traits %>%
-  mutate(across(16:23, ~ case_when(. == "P" ~ 1, 
-                                   . == "A" ~ 0, 
-                                   TRUE ~ as.numeric(.))),
-         across(24, ~ case_when(. == "A" ~ 1, 
-                                . == "B" ~ 2, 
-                                . == "C" ~ 3, 
-                                TRUE ~ as.numeric(.)))) %>% 
-  select(-c(gill_raker_types, oral_gape_axis)) %>% 
-  as.matrix()
-
-# Remove the "[,1]" suffix from column names
-names(spxtraits.matrix) <- gsub("[,1]", "", names(spxtraits.matrix))
-
-#check rownames
-#rownames(spxtraits.matrix) == rownames(spxcom.matrix)
-
-result_CWM <- FD::functcomp(spxtraits.matrix, t(spxcom.matrix)) 
-#FD::functcomp(spxtraits.matrix, t(spxcom.matrix), CWM.type = "all")
-
-#  Calculate Total biomass
-total_biomass <- colSums(spxcom.matrix)
-
-#  Calculate Relative biomass
-sp_rel_biomass <- t(spxcom.matrix) / total_biomass
-
-# Transpose the Relative biomass Matrix for Display
-t_sp_rel_biomass <- t(sp_rel_biomass)
-
-total_sum <- colSums(t(sp_rel_biomass))
-
-# Initialize an empty data frame to store results
-CWM_df <- data.frame(
-  depth_layer = character(),
-  trait = character(),
-  total_sum = numeric(),
-  weighted_mean = numeric(),
-  stringsAsFactors = FALSE
-)
-
-library(traitstrap)
 
 # Trait 
 trait_boot <- morpho_data%>% 
@@ -1126,7 +1084,7 @@ trait_boot <- morpho_data%>%
     small_teeth, 
     large_teeth, 
     fang_teeth, 
-    retractable_teeth, 
+   # retractable_teeth, 
     internal_teeth
   ) %>%
   mutate_at(vars(ventral_photophores, 
@@ -1135,7 +1093,7 @@ trait_boot <- morpho_data%>%
                  small_teeth, 
                  large_teeth, 
                  fang_teeth, 
-                 retractable_teeth, 
+                # retractable_teeth, 
                  internal_teeth), 
             funs(ifelse(. == "P", 1, ifelse(. == "A", 0, .)))) %>% 
   mutate(across(all_of(c("ventral_photophores", 
@@ -1144,7 +1102,7 @@ trait_boot <- morpho_data%>%
                          "small_teeth", 
                          "large_teeth", 
                          "fang_teeth", 
-                         "retractable_teeth", 
+                         #"retractable_teeth", 
                          "internal_teeth")), as.numeric)) %>% 
   tidyr::pivot_longer(!c(species,depth), names_to = "trait", values_to = "values")%>%
   # add column with depth layer
@@ -1183,7 +1141,7 @@ community <-  rbind(data_biomass_2002_2019, data_biomass_2021, data_biomass_2022
     TRUE ~ species
   )) 
 
-trait_filling <- trait_fill(
+trait_filling <- traitstrap::trait_fill(
   # input data (mandatory)
   comm = community,
   traits = trait_boot,
@@ -1202,73 +1160,123 @@ trait_filling <- trait_fill(
 )
 
 # run nonparametric bootstrapping
-np_bootstrapped_moments <- trait_np_bootstrap(
+np_bootstrapped_moments <- traitstrap::trait_np_bootstrap(
   trait_filling, 
   nrep = 100
 )
 
-np_bootstrapped_moments_plot <- np_bootstrapped_moments %>% 
-  mutate(trait= gsub("_"," ", trait))%>%
-  filter(
-    trait %in% c(
-      "caudal throttle width",
-      "oral gape surface",
-       "gill outflow",
-      "large teeth",
-       "small teeth",
-      "orbital length",  
-      "eye size",
-      "transversal shape",
-      "operculum volume",
-      "ventral photophores",
-      "internal teeth",
-      "eye position",
-      "oral gape shape"
-    )
-  )
+np_bootstrapped_moments_wide <- np_bootstrapped_moments %>%
+  ungroup() %>%
+  group_by(depth_layer, trait) %>%
+  mutate(id = row_number()) %>%  
+  ungroup()%>%
+  select(trait, depth_layer, mean, id) %>%
+  tidyr::pivot_wider(
+    names_from = trait,
+    values_from = mean
+  ) %>%
+  select(-id)
 
-np_bootstrapped_moments_plot$trait <- factor(
-  np_bootstrapped_moments_plot$trait,
+
+# List of traits/columns in your data frame that you want to analyze
+traits <- names(np_bootstrapped_moments_wide)[!names(np_bootstrapped_moments_wide) %in% "depth_layer"]
+
+# Initialize an empty list to store summary tables for each trait
+summary_tables <- list()
+
+# Loop through each trait
+for (trait in traits) {
+  
+  # Perform ANOVA
+  formula <- as.formula(paste(trait, "~ depth_layer"))
+  anova <- aov(formula, data = np_bootstrapped_moments_wide)
+  
+  # Perform Tukey's test
+  tukey <- TukeyHSD(anova)
+  
+  # Generate compact letter display (CLD)
+  cld <- multcompView::multcompLetters4(anova, tukey)
+  
+  # Summarize the mean and 3rd quantile for each depth_layer
+  Tk <- np_bootstrapped_moments_wide %>%
+    group_by(depth_layer) %>%
+    summarise(mean = mean(.data[[trait]], na.rm = TRUE), 
+              quant = quantile(.data[[trait]], probs = 0.75, na.rm = TRUE)) %>%
+    arrange(desc(mean))
+  
+  # Add the compact letter display to the summary table
+  cld_df <- as.data.frame.list(cld$depth_layer)
+  Tk$cld <- cld_df$Letters
+  
+  # Store the summary table for each trait
+  summary_tables[[trait]] <- Tk
+}
+
+# Reshape data to long format
+long_data <- np_bootstrapped_moments_wide %>%
+  pivot_longer(cols = all_of(traits), names_to = "trait", values_to = "value") %>% 
+  mutate(trait= gsub("_"," ", trait))
+
+long_data$depth_layer <- factor(
+  long_data$depth_layer,
   levels = c(
-    "caudal throttle width",
-     "oral gape surface",
-    "gill outflow",
-    "large teeth",
-    "small teeth",
-    "orbital length",
-    "eye size",
-    "transversal shape",
-    "operculum volume",
-    "ventral photophores",
-    "internal teeth",
-    "eye position",
-    "oral gape shape"
+    "Epipelagic",
+    "Upper mesopelagic",
+    "Lower mesopelagic",
+    "Bathypelagic"
   )
-)
+) 
 
-np_bootstrapped_moments_plot$depth_layer <- factor(np_bootstrapped_moments_plot$depth_layer, 
-                                                   levels = c("Epipelagic", "Upper mesopelagic", "Lower mesopelagic", "Bathypelagic"))
+long_data$trait<- factor(
+  long_data$trait,
+  levels = c(
+   "caudal throttle width",
+   "oral gape surface",
+   "gill outflow",
+   "large teeth",
+   "eye size",
+   "orbital length",
+   "small teeth",
+   "transversal shape",
+   "body depth",
+   "dorsal fin insertion",
+   "eye position",
+   "oral gape shape",
+   "oral gape position",
+   "internal teeth",
+   "lower jaw length",
+   "pectoral fin position",
+   "ventral photophores",
+   "operculum volume",
+   "pectoral fin insertion",
+   "head length",
+   "chin barbel",
+   "fang teeth",
+   "gland head"
+  )
+) 
 
-# Mean
-ggplot(np_bootstrapped_moments_plot, aes(x=depth_layer, y=mean)) +
-  geom_boxplot(aes(col=depth_layer, fill=depth_layer), alpha=0.08) +
-  scale_fill_manual(values = c("#FEA520","#D62246","#6255B4","#3C685A"))+
-  scale_color_manual(values = c("#FEA520","#D62246","#6255B4","#3C685A"))+
+#plot
+ggplot(long_data, aes(x = depth_layer, y = value)) + 
+  geom_boxplot(aes(col = depth_layer, fill = depth_layer), alpha = 0.08, outlier.shape = NA, lwd=0.4) + 
+  scale_color_manual(values = c("#FEA520", "#D62246", "#6255B4", "#3C685A")) +
+  scale_fill_manual(values = c("#FEA520", "#D62246", "#6255B4", "#3C685A")) +
+  facet_wrap(~trait, scales = "free", ncol = 4) +
+  theme_light() +
+  labs(y="Booststrapped CWM")+
   guides(col="none", fill="none")+
-  labs(y="Bootstrapped CWM")+
-  facet_wrap(~trait, scales = "free")+
-  theme_light()+
-  theme(axis.text.x = element_blank(), 
-        axis.title.x = element_blank(), 
-        panel.grid.minor =  element_blank(),
-        axis.title.y.left =  element_text(size =14), 
-        strip.text = element_text( face="bold"),  
-        axis.title.y = element_text(size=15),
-        axis.text.y = element_text(size=14),
-        strip.background=element_rect(fill="white"),
-        strip.text.x = element_text(size = 14, color = "black"))
+  theme(axis.text.x = element_blank(),
+        axis.title.x = element_blank(),
+        panel.grid.minor = element_blank(),
+        axis.title.y.left = element_text(size = 16),
+        axis.title.y = element_text(size = 16),
+        axis.text.y = element_text(size = 15),
+        strip.background = element_rect(fill = "white"),
+        strip.text.x = element_text(size = 16, color = "black"))# +
+#geom_text(data = Tk, aes(x = depth_layer, y = quant, label = cld), size = 3, vjust=0, hjust =0)
 
-ggsave("CWM_boot.png", path = "figures", dpi = 700, height = 10, width = 12)
+ggsave("CWM_boot.png", path = "figures", dpi = 800, height = 12, width = 12)
+
 ```
 
 ## 4.2. PCA CWM 
@@ -1395,4 +1403,82 @@ ggplot(sp_ri_ui, aes(Ri,Ui))+
         legend.text = element_text(size=14))
 
 ggsave("Uniqueness_Ri.png", path = "figures", dpi = 700, height = 8, width = 10)
+```
+
+__which traits are mainly driving uniqueness ?__
+
+```{r}
+#| echo: true
+#| label: uniqueness_traits
+#| warning: false
+#| message: false
+
+df <- fish_traits %>%
+  as.data.frame() %>%
+  tibble::rownames_to_column(var = "species") %>%
+  left_join(sp_ui) %>%
+  tibble::column_to_rownames(var = "species")
+
+# Identify numerical and categorical traits
+numeric_traits <- colnames(df)[sapply(df, is.numeric) &
+                                 colnames(df) != "Ui"]
+
+categorical_traits <- colnames(df)[!sapply(df, is.numeric) &
+                                     colnames(df) != "Ui"]
+
+# Initialize a data frame to store all results
+combined_results_df <- data.frame(
+  Trait = character(0),
+  Type = character(0),
+  Eta_R_squared = numeric(0),
+  P_value = numeric(0),
+  stringsAsFactors = FALSE
+)
+
+# Step 1: Perform Kruskal-Wallis test for categorical traits
+for (categorical_trait in categorical_traits) {
+  kruskal_result <- kruskal.test(df$Ui ~ df[[categorical_trait]])
+  
+  # Calculate eta-squared for Kruskal-Wallis
+  n_groups <- length(unique(df[[categorical_trait]]))
+  n_total <- length(df$Ui)
+  h_value <- kruskal_result$statistic
+  eta_squared <- (h_value - (n_groups - 1)) / (n_total - n_groups)
+  
+  combined_results_df <- rbind(
+    combined_results_df,
+    data.frame(
+      Trait = categorical_trait,
+      Type = "Categorical",
+      Eta_R_squared = as.numeric(format(eta_squared, scientific = FALSE)),
+      P_value = as.numeric(format(kruskal_result$p.value, scientific = FALSE)),
+      stringsAsFactors = FALSE
+    )
+  )
+}
+
+# Step 2: Fit linear models for numerical traits
+for (numeric_trait in numeric_traits) {
+  lm_result <- lm(Ui ~ df[[numeric_trait]], data = df)
+  summary_stats <- summary(lm_result)
+  
+  combined_results_df <- rbind(
+    combined_results_df,
+    data.frame(
+      Trait = numeric_trait,
+      Type = "Numeric",
+      Eta_R_squared = as.numeric(format(summary_stats$r.squared, scientific = FALSE)),
+      P_value = as.numeric(format(
+        summary_stats$coefficients[2, 4], scientific = FALSE
+      )),
+      stringsAsFactors = FALSE
+    )
+  )
+}
+
+# Round the numeric columns to three decimal places
+combined_results_df[, c("Eta_R_squared", "P_value")] <-
+  round(combined_results_df[, c("Eta_R_squared", "P_value")], 3)
+
+htmltools::tagList(DT::datatable(combined_results_df))
 ```
