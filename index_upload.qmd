@@ -620,10 +620,6 @@ htmltools::tagList(DT::datatable(traits_effect))
 #| fig-width: 8
 #| fig-height: 8
 
-library(dplyr)
-library(tidyr)
-library(ggplot2)
-library(tibble)
 
 # Convert sp_faxes_coord_fish to a data frame
 sp_coord_community <- as.data.frame(sp_faxes_coord_fish[, c("PC1", "PC2")]) %>%
@@ -1214,7 +1210,7 @@ for (trait in traits) {
 
 # Reshape data to long format
 long_data <- np_bootstrapped_moments_wide %>%
-  pivot_longer(cols = all_of(traits), names_to = "trait", values_to = "value") %>% 
+  tidyr::pivot_longer(cols = all_of(traits), names_to = "trait", values_to = "value") %>% 
   mutate(trait= gsub("_"," ", trait))
 
 long_data$depth_layer <- factor(
@@ -1293,23 +1289,6 @@ sum_boot_moment <- trait_summarise_boot_moments(
   np_bootstrapped_moments
 ) %>% 
   ungroup() %>% 
-  filter(
-    trait %in% c(
-      "caudal_throttle width",
-      "oral_gape_surface",
-      "gill_outflow",
-      "large_teeth",
-      "small_teeth",
-      "orbital_length",  
-      "eye_size",
-      "transversal_shape",
-      "operculum_volume",
-      "ventral_photophores",
-      "internal_teeth",
-      "eye_position",
-      "oral_gape_shape"
-    )
-  ) %>% 
   mutate(trait= gsub("_"," ", trait)) %>% 
   select(c(trait, depth_layer, mean)) %>% 
   group_by(
@@ -1324,12 +1303,10 @@ sum_boot_moment <- trait_summarise_boot_moments(
 res.pca <- FactoMineR::PCA(sum_boot_moment, graph = FALSE)
 
 factoextra::fviz_pca_biplot(res.pca, repel = TRUE,
-                            col.var = "gray50", 
-                            col.ind = "black", 
                             pointsize = 2,
                             arrowsize = 0.2,
-                            title = "", 
-                            label = "var")+
+                            title = "", col.var = "contrib",
+                            gradient.cols = c("white", "blue", "red"))+
   theme_light()+
   theme(panel.grid.minor =  element_blank(),
         panel.grid.major = element_blank())
@@ -1482,3 +1459,146 @@ combined_results_df[, c("Eta_R_squared", "P_value")] <-
 
 htmltools::tagList(DT::datatable(combined_results_df))
 ```
+```{r}
+#| echo: true
+#| label: plot_functional_space_PC3
+#| warning: false
+#| message: false
+#| fig-width: 8
+#| fig-height: 8
+
+# Convert sp_faxes_coord_fish to a data frame
+sp_coord_community_2 <- as.data.frame(sp_faxes_coord_fish[, c("PC3", "PC4")]) %>%
+  tibble::rownames_to_column(var = "species")
+
+
+# Create a list to store data frames for each depth layer
+all_data_layers_2 <- lapply(unique(sp_all_layers$depth_layer), function(layer) {
+  sp_layer <- sp_all_layers %>%
+    filter(depth_layer == layer)
+  
+  # Mark presence or absence
+  sp_coord_layer <- sp_coord_community_2 %>%
+    mutate(layer_presence = ifelse(species %in% sp_layer$species, "yes", "no")) %>%
+    mutate(depth_layer = layer)
+  
+  return(sp_coord_layer)
+})
+
+# Combine all layers into one data frame
+sp_coord_community_all_layers <- bind_rows(all_data_layers_2)
+
+# Function to calculate the convex hull for a given data frame
+calculate_hull <- function(data) {
+  if (nrow(data) < 3) return(data)  # Handle cases with fewer than 3 points
+  data %>%
+    slice(chull(PC3, PC4))
+}
+
+# Initialize lists to store hulls
+hull_all_combined <- NULL
+hull_layer_combined <- NULL
+
+for(layer in unique(sp_coord_community_all_layers$depth_layer)) {
+  sp_layer <- sp_coord_community_all_layers %>%
+    filter(depth_layer == layer)
+  
+  hull_all <- calculate_hull(sp_layer) %>%
+    mutate(depth_layer = layer, type = "all")
+  
+  hull_layer <- calculate_hull(sp_layer %>% filter(layer_presence == "yes")) %>%
+    mutate(depth_layer = layer, type = "present")
+  
+  hull_all_combined <- bind_rows(hull_all_combined, hull_all)
+  hull_layer_combined <- bind_rows(hull_layer_combined, hull_layer)
+}
+
+# Define depth layer levels in desired order
+depth_levels <- c("Epipelagic", "Upper mesopelagic", "Lower mesopelagic", "Bathypelagic")
+
+# Ensure depth_layer is a factor with specified levels
+sp_coord_community_all_layers$depth_layer <- factor(sp_coord_community_all_layers$depth_layer, levels = depth_levels)
+hull_all_combined$depth_layer <- factor(hull_all_combined$depth_layer, levels = depth_levels)
+hull_layer_combined$depth_layer <- factor(hull_layer_combined$depth_layer, levels = depth_levels)
+
+# Define colors for each depth layer
+depth_colors <- c("Epipelagic" = "#FEA520", 
+                  "Upper mesopelagic" = "#D62246", 
+                  "Lower mesopelagic" = "#6255B4", 
+                  "Bathypelagic" = "#3C685A")
+
+# Plotting
+plot_depth <- ggplot() +
+  # Plot present species
+  geom_point(data = sp_coord_community_all_layers %>% filter(layer_presence == "yes"), 
+             aes(PC3, PC4, col = depth_layer, shape = layer_presence), size = 2, alpha=0.8) +
+  # Plot absent species
+  geom_point(data = sp_coord_community_all_layers %>% filter(layer_presence == "no"), 
+             aes(PC3, PC4), col = "grey", shape = 19, size = 2, alpha = 0.6) +
+  # Plot hulls
+  geom_polygon(data = hull_all_combined, aes(x = PC3, y = PC4), 
+               fill = "lightgrey", alpha = 0.17) +
+  geom_polygon(data = hull_layer_combined, aes(x = PC3, y = PC4, group = depth_layer, fill = depth_layer), 
+               alpha = 0.2) +
+  theme_light() +
+  scale_color_manual(values = depth_colors) +
+  scale_fill_manual(values = depth_colors) +
+  guides(col = "none", shape = "none", fill = "none") +
+  facet_wrap(~ depth_layer, nrow=1 ) +  
+  theme(
+    strip.text.x = element_text(size = 14, color = "gray20"),
+    strip.background = element_rect(fill = "white"),
+    aspect.ratio = 1,
+    legend.title = element_text(size = 12),
+    legend.text = element_text(size = 12),
+    panel.grid.minor = element_blank(),
+    panel.grid.major = element_blank()
+  )
+
+
+beta_fd_indices_fish <- mFD::beta.fd.multidim(
+  sp_faxes_coord   = sp_faxes_coord_fish[ , c("PC3", "PC4", "PC3", "PC4")],
+  asb_sp_occ       = asb_sp_fish_occ,
+  check_input      = TRUE,
+  beta_family      = c("Jaccard"),
+  details_returned = T)
+
+vertices_community <-beta_fd_indices_fish$"details"$"asb_vertices"$Bathypelagic 
+
+sp_coord_community_2 <- as.data.frame(sp_faxes_coord_fish[, 3:4]) %>% 
+  tibble::rownames_to_column(var = "species") %>% 
+  mutate(vertices=case_when(species%in%vertices_community~"vertice",
+                            !species%in%vertices_community~"not_vertice")) 
+
+hull <- sp_coord_community_2%>% 
+  slice(chull(PC3, PC4))
+
+plot_com <- ggplot(data = sp_coord_community_2,aes(PC3, PC4)) +
+  scale_color_manual(values = c("grey", "black"))+
+  geom_point(size = 2.5, alpha=0.8, aes( shape=vertices, col= vertices)) +
+  geom_polygon(data=hull, aes(x = PC3, y = PC4), 
+               fill = "lightgrey", alpha = 0.17) +
+  theme_light() +
+  geom_hline(yintercept = 0, linetype = 2, col = "gray45") +
+  geom_vline(xintercept = 0, linetype = 2, col = "gray45") +
+  guides(col = "none", shape = "none", fill = "none") +
+  theme(
+    strip.text.x = element_text(size = 14, color = "gray20"),
+    strip.background = element_rect(fill = "white"),
+    aspect.ratio = 1,
+    legend.title = element_text(size = 12),
+    legend.text = element_text(size = 12),
+    panel.grid.minor = element_blank(),
+    panel.grid.major = element_blank()
+  )
+
+ggpubr::ggarrange(
+  labels = c("A","B"),
+  plot_com,   
+  plot_depth, 
+  nrow = 2
+) 
+
+ggsave("functional_space_PC3_4.png", path = "figures", dpi = 800, height = 8, width = 10)
+```
+
