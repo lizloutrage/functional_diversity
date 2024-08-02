@@ -37,8 +37,8 @@ morpho_data <- morphometric_data %>%
   as.data.frame() %>%
   janitor::row_to_names(row_number = 1) %>%
   `rownames<-`(NULL)%>%
-  # delete for now (n=1)
-  filter(species!= "Diaphus_sp")
+  # delete for now (n=1) and Eurypharynx pelecanoides present 7 missing traits 
+  filter(!species%in% c("Diaphus_sp","Eurypharynx_pelecanoides"))
 
 # replace empty value by NA 
 morpho_data[morpho_data ==""] <- NA
@@ -60,6 +60,7 @@ morpho_data[, 4:23] <- sapply(morpho_data[, 4:23], as.numeric)
 
 #select numeric variables for imputation 
 original_data <- morpho_data %>%
+   filter(species!="Eurypharynx_pelecanoides") %>% 
   select(1:23)
 
 imputation <-
@@ -151,6 +152,7 @@ fish_traits <- numeric_traits %>%
   inner_join(cat_morpho, by = "species") %>%
   arrange(species) %>% 
   mutate(species = stringr::str_replace(species,  "Cyclothone_sp","Cyclothone")) %>% 
+  filter(species!="Eurypharynx_pelecanoides") %>% 
   tibble::column_to_rownames("species")%>%
   # assign trait type 
   # as.factor for qualitative traits
@@ -362,8 +364,7 @@ data_biomass_2021_2022 <-
          "biomass_sp" = "Trawl.sum.biomass..kg.") %>%
   mutate(biomass_sp = biomass_sp * 1000)
 
-
-# #merge all matrix ----
+#merge all matrix ----
 depth_fish_biomass <-
   rbind(data_biomass_2002_2019, data_biomass_2021_2022) %>%
   as.data.frame() %>%
@@ -391,6 +392,24 @@ depth_fish_biomass <-
   replace(is.na(.), 0) %>%
   tibble::column_to_rownames(var = "depth_layer") %>%
   as.matrix()
+```
+
+```{r}
+#| echo: true
+#| label: biomass_sum
+#| warning: false
+#| message: false
+
+biomass_sum <- depth_fish_biomass %>%
+  as.data.frame() %>%
+  tibble::rownames_to_column(var = "depth_layer") %>%
+  tidyr::pivot_longer(!depth_layer, names_to = "species", values_to = "biomass") %>%
+  group_by(depth_layer) %>%
+  filter(biomass > 0) %>%
+  summarise(biomass_depth = round(sum(biomass), 3),
+            n = n())
+
+htmltools::tagList(DT::datatable(biomass_sum))
 ```
 
 ## 1.4. Traits types
@@ -710,15 +729,15 @@ depth_colors <- c("Epipelagic" = "#FEA520",
 plot_depth <- ggplot() +
   # Plot present species
   geom_point(data = sp_coord_community_all_layers %>% filter(layer_presence == "yes"), 
-             aes(PC1, PC2, col = depth_layer, shape = layer_presence), size = 2, alpha=0.8) +
+             aes(PC1, PC2, col = depth_layer, shape = layer_presence), size = 2) +
   # Plot absent species
   geom_point(data = sp_coord_community_all_layers %>% filter(layer_presence == "no"), 
-             aes(PC1, PC2), col = "grey", shape = 19, size = 2, alpha = 0.6) +
+             aes(PC1, PC2), col = "grey", shape = 19, size = 2) +
   # Plot hulls
   geom_polygon(data = hull_all_combined, aes(x = PC1, y = PC2), 
-               fill = "lightgrey", alpha = 0.17) +
+               fill = "lightgrey", alpha = 0.2) +
   geom_polygon(data = hull_layer_combined, aes(x = PC1, y = PC2, group = depth_layer, fill = depth_layer), 
-               alpha = 0.2) +
+               alpha = 0.3) +
   theme_light() +
   scale_color_manual(values = depth_colors) +
   scale_fill_manual(values = depth_colors) +
@@ -756,7 +775,7 @@ plot_com <- ggplot(data = sp_coord_community,aes(PC1, PC2)) +
   scale_color_manual(values = c("grey", "black"))+
   geom_point(size = 2.5, alpha=0.8, aes( shape=vertices, col= vertices)) +
   geom_polygon(data=hull, aes(x = PC1, y = PC2), 
-               fill = "lightgrey", alpha = 0.17) +
+               fill = "lightgrey", alpha = 0.2) +
   theme_light() +
   geom_hline(yintercept = 0, linetype = 2, col = "gray45") +
   geom_vline(xintercept = 0, linetype = 2, col = "gray45") +
@@ -778,9 +797,7 @@ ggpubr::ggarrange(
   nrow = 2
 ) 
 
-ggsave("functional_space.png", path = "figures",
-       dpi = 800, height = 8, width = 10)
-
+ggsave("functional_space.png", path = "figures", dpi = 800, height = 8, width = 10)
 
 ```
 
@@ -844,7 +861,7 @@ obsFD_div <- obsFD$functional_diversity_indices
 
 # Null model ----
 # Define the number of replications
-nb_rep <- 10
+nb_rep <- 1000
 
 # Initialize a list to store results of random functional diversity calculations for each index
 indices_names <- colnames(obsFD_div)
@@ -863,7 +880,7 @@ for (index_name in indices_names) {
 for (rep in 1:nb_rep) {
   randomize_mx <- picante::randomizeMatrix(samp = station_sp,
                                            null.model = "frequency",
-                                           iterations = 10)
+                                           iterations = 1)
   
   simFD_cal <- mFD::alpha.fd.multidim(
     sp_faxes_coord = sp_faxes_coord_fish[, c("PC1", "PC2", "PC3", "PC4")],
@@ -1016,8 +1033,17 @@ ggplot(results_df_plot, aes(x = depth_layer, y = values, fill = depth_layer)) +
   geom_hline(yintercept = 0, linetype = "dashed", color = "black", linewidth = 0.8)+
   guides(col="none", fill="none")
 
-
 ggsave("SES_indices.png", path = "figures", dpi = 700, height = 7, width = 9)
+
+# Perform t-tests on SES values for each index by depth layer
+t_test_results <- results_df_plot %>%
+  group_by(indice, depth_layer) %>%
+  summarize(
+    t_statistic = t.test(values, mu = 0)$statistic,
+    p_value = t.test(values, mu = 0)$p.value,
+    mean_SES = mean(values),
+    .groups = 'drop'
+  )
 
 ```
 
@@ -1270,7 +1296,7 @@ ggplot(long_data, aes(x = depth_layer, y = value)) +
         strip.text.x = element_text(size = 16, color = "black"))# +
 #geom_text(data = Tk, aes(x = depth_layer, y = quant, label = cld), size = 3, vjust=0, hjust =0)
 
-ggsave("CWM_boot.png", path = "figures", dpi = 800, height = 12, width = 12)
+ggsave("CWM_boot.png", path = "figures", dpi = 800, height = 13, width = 12)
 
 ```
 
@@ -1361,7 +1387,7 @@ stat <- sp_ri_ui %>%
 ggplot(sp_ri_ui, aes(Ri,Ui))+
   geom_point(size = 2.7, aes(shape=order))+
   ggrepel::geom_text_repel(aes(label = species), col="grey70", max.overlaps=3, size=4.5)+
-  scale_shape_manual(values = c(8, 16, 7, 17, 19, 15, 3, 25))+
+  scale_shape_manual(values = c(8, 16, 7, 17, 19, 15, 3, 25,22))+
   labs(y = "Functional Uniqueness", x = "Geographical Restrictedness", shape="Taxonomic order")+
   theme_bw()+
   geom_hline(yintercept = stat$mean_ui, linetype = "dashed", color = "black", linewidth = 0.8)+
@@ -1452,6 +1478,8 @@ combined_results_df[, c("Eta_R_squared", "P_value")] <-
 
 htmltools::tagList(DT::datatable(combined_results_df))
 ```
+
+# 6. Appendices
 ```{r}
 #| echo: true
 #| label: plot_functional_space_PC3
@@ -1524,15 +1552,15 @@ depth_colors <- c("Epipelagic" = "#FEA520",
 plot_depth <- ggplot() +
   # Plot present species
   geom_point(data = sp_coord_community_all_layers %>% filter(layer_presence == "yes"), 
-             aes(PC3, PC4, col = depth_layer, shape = layer_presence), size = 2, alpha=0.8) +
+             aes(PC3, PC4, col = depth_layer, shape = layer_presence), size = 2) +
   # Plot absent species
   geom_point(data = sp_coord_community_all_layers %>% filter(layer_presence == "no"), 
-             aes(PC3, PC4), col = "grey", shape = 19, size = 2, alpha = 0.6) +
+             aes(PC3, PC4), col = "grey", shape = 19, size = 2) +
   # Plot hulls
   geom_polygon(data = hull_all_combined, aes(x = PC3, y = PC4), 
-               fill = "lightgrey", alpha = 0.17) +
+               fill = "lightgrey", alpha = 0.2) +
   geom_polygon(data = hull_layer_combined, aes(x = PC3, y = PC4, group = depth_layer, fill = depth_layer), 
-               alpha = 0.2) +
+               alpha = 0.3) +
   theme_light() +
   scale_color_manual(values = depth_colors) +
   scale_fill_manual(values = depth_colors) +
@@ -1568,9 +1596,9 @@ hull <- sp_coord_community_2%>%
 
 plot_com <- ggplot(data = sp_coord_community_2,aes(PC3, PC4)) +
   scale_color_manual(values = c("grey", "black"))+
-  geom_point(size = 2.5, alpha=0.8, aes( shape=vertices, col= vertices)) +
+  geom_point(size = 2.5,aes( shape=vertices, col= vertices)) +
   geom_polygon(data=hull, aes(x = PC3, y = PC4), 
-               fill = "lightgrey", alpha = 0.17) +
+               fill = "lightgrey", alpha = 0.2) +
   theme_light() +
   geom_hline(yintercept = 0, linetype = 2, col = "gray45") +
   geom_vline(xintercept = 0, linetype = 2, col = "gray45") +
