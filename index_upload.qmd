@@ -138,7 +138,7 @@ cat_morpho <- morpho_data %>%
     small_teeth,
     large_teeth,
     fang_teeth,
-   # retractable_teeth,
+    retractable_teeth,
     internal_teeth,
     gill_raker_types,
     oral_gape_axis
@@ -427,8 +427,7 @@ The **first column** contains **traits name**. The **second column** contains
 #| warning: false
 #| message: false
 
-fish_traits_cat <- utils::read.csv(here::here("data", "fish_traits_cat.csv"), sep = ";", header = T, dec = ".") %>% 
-  filter(trait_name!="retractable_teeth")
+fish_traits_cat <- utils::read.csv(here::here("data", "fish_traits_cat.csv"), sep = ";", header = T, dec = ".") 
 htmltools::tagList(DT::datatable(fish_traits_cat))
 
 ```
@@ -608,7 +607,7 @@ fish_tr_faxes_2$"tr_faxes_plot"
 
 # third set ----
 fish_traits_3 <- fish_traits%>%
-  select(19:25)
+  select(19:26)
 
 fish_tr_faxes_3 <- mFD::traits.faxes.cor(
   sp_tr          = fish_traits_3, 
@@ -729,10 +728,10 @@ depth_colors <- c("Epipelagic" = "#FEA520",
 plot_depth <- ggplot() +
   # Plot present species
   geom_point(data = sp_coord_community_all_layers %>% filter(layer_presence == "yes"), 
-             aes(PC1, PC2, col = depth_layer, shape = layer_presence), size = 2) +
+             aes(PC1, PC2, col = depth_layer), size = 2, shape=19) +
   # Plot absent species
   geom_point(data = sp_coord_community_all_layers %>% filter(layer_presence == "no"), 
-             aes(PC1, PC2), col = "grey", shape = 19, size = 2) +
+             aes(PC1, PC2), col = "grey", shape = 8, size = 2) +
   # Plot hulls
   geom_polygon(data = hull_all_combined, aes(x = PC1, y = PC2), 
                fill = "lightgrey", alpha = 0.2) +
@@ -1030,20 +1029,11 @@ ggplot(results_df_plot, aes(x = depth_layer, y = values, fill = depth_layer)) +
         strip.background = element_rect(fill = "white"),
         axis.title = element_text(size = 13),
         axis.text = element_text(size = 13))+
-  geom_hline(yintercept = 0, linetype = "dashed", color = "black", linewidth = 0.8)+
+  geom_hline(yintercept = 1.96, linetype = "dashed", color = "gray50", linewidth = 0.8)+
+  geom_hline(yintercept = -1.96, linetype = "dashed", color = "gray50", linewidth = 0.8)+
   guides(col="none", fill="none")
 
 ggsave("SES_indices.png", path = "figures", dpi = 700, height = 7, width = 9)
-
-# Perform t-tests on SES values for each index by depth layer
-t_test_results <- results_df_plot %>%
-  group_by(indice, depth_layer) %>%
-  summarize(
-    t_statistic = t.test(values, mu = 0)$statistic,
-    p_value = t.test(values, mu = 0)$p.value,
-    mean_SES = mean(values),
-    .groups = 'drop'
-  )
 
 ```
 
@@ -1113,7 +1103,7 @@ trait_boot <- morpho_data%>%
     small_teeth, 
     large_teeth, 
     fang_teeth, 
-   # retractable_teeth, 
+    retractable_teeth, 
     internal_teeth
   ) %>%
   mutate_at(vars(ventral_photophores, 
@@ -1122,7 +1112,7 @@ trait_boot <- morpho_data%>%
                  small_teeth, 
                  large_teeth, 
                  fang_teeth, 
-                # retractable_teeth, 
+                 retractable_teeth, 
                  internal_teeth), 
             funs(ifelse(. == "P", 1, ifelse(. == "A", 0, .)))) %>% 
   mutate(across(all_of(c("ventral_photophores", 
@@ -1131,7 +1121,7 @@ trait_boot <- morpho_data%>%
                          "small_teeth", 
                          "large_teeth", 
                          "fang_teeth", 
-                         #"retractable_teeth", 
+                         "retractable_teeth", 
                          "internal_teeth")), as.numeric)) %>% 
   tidyr::pivot_longer(!c(species,depth), names_to = "trait", values_to = "values")%>%
   # add column with depth layer
@@ -1186,60 +1176,127 @@ np_bootstrapped_moments <- traitstrap::trait_np_bootstrap(
   nrep = 100
 )
 
-np_bootstrapped_moments_wide <- np_bootstrapped_moments %>%
-  ungroup() %>%
-  group_by(depth_layer, trait) %>%
-  mutate(id = row_number()) %>%  
-  ungroup()%>%
-  select(trait, depth_layer, mean, id) %>%
-  tidyr::pivot_wider(
-    names_from = trait,
-    values_from = mean
-  ) %>%
-  select(-id)
+# np_bootstrapped_moments_wide <- np_bootstrapped_moments %>%
+#   ungroup() %>%
+#   group_by(depth_layer, trait) %>%
+#   mutate(id = row_number()) %>%  
+#   ungroup()%>%
+#   select(trait, depth_layer, mean, id) %>%
+#   tidyr::pivot_wider(
+#     names_from = trait,
+#     values_from = mean
+#   ) %>%
+#   select(-id)
+# 
+# 
+# # List of traits/columns in your data frame that you want to analyze
+# traits <- names(np_bootstrapped_moments_wide)[!names(np_bootstrapped_moments_wide) %in% "depth_layer"]
+# 
+# # Initialize an empty list to store summary tables for each trait
+# summary_tables <- list()
+# 
+# # Loop through each trait
+# for (trait in traits) {
+#   
+#   # Perform ANOVA
+#   formula <- as.formula(paste(trait, "~ depth_layer"))
+#   anova <- aov(formula, data = np_bootstrapped_moments_wide)
+#   
+#   # Perform Tukey's test
+#   tukey <- TukeyHSD(anova)
+#   
+#   # Generate compact letter display (CLD)
+#   cld <- multcompView::multcompLetters4(anova, tukey)
+#   
+#   # Summarize the mean and 3rd quantile for each depth_layer
+#   Tk <- np_bootstrapped_moments_wide %>%
+#     group_by(depth_layer) %>%
+#     summarise(mean = mean(.data[[trait]], na.rm = TRUE), 
+#               quant = quantile(.data[[trait]], probs = 0.75, na.rm = TRUE)) %>%
+#     arrange(desc(mean))
+#   
+#   # Add the compact letter display to the summary table
+#   cld_df <- as.data.frame.list(cld$depth_layer)
+#   Tk$cld <- cld_df$Letters
+#   
+#   # Store the summary table for each trait
+#   summary_tables[[trait]] <- Tk
+# }
+# 
+# # Reshape data to long format
+# long_data <- np_bootstrapped_moments_wide %>%
+#   tidyr::pivot_longer(cols = all_of(traits), names_to = "trait", values_to = "value") %>% 
+#   mutate(trait= gsub("_"," ", trait))
+# 
+# long_data$depth_layer <- factor(
+#   long_data$depth_layer,
+#   levels = c(
+#     "Epipelagic",
+#     "Upper mesopelagic",
+#     "Lower mesopelagic",
+#     "Bathypelagic"
+#   )
+# ) 
+# 
+# long_data$trait<- factor(
+#   long_data$trait,
+#   levels = c(
+#    "caudal throttle width",
+#    "oral gape surface",
+#    "gill outflow",
+#    "large teeth",
+#    "eye size",
+#    "orbital length",
+#    "small teeth",
+#    "transversal shape",
+#    "body depth",
+#    "dorsal fin insertion",
+#    "eye position",
+#    "oral gape shape",
+#    "oral gape position",
+#    "internal teeth",
+#    "lower jaw length",
+#    "pectoral fin position",
+#    "ventral photophores",
+#    "operculum volume",
+#    "pectoral fin insertion",
+#    "head length",
+#    "chin barbel",
+#    "fang teeth",
+#    "gland head"
+#   )
+# ) 
+# 
+# #plot
+# ggplot(long_data, aes(x = depth_layer, y = value)) + 
+#   geom_boxplot(aes(col = depth_layer, fill = depth_layer), alpha = 0.08, outlier.shape = NA, lwd=0.4) + 
+#   scale_color_manual(values = c("#FEA520", "#D62246", "#6255B4", "#3C685A")) +
+#   scale_fill_manual(values = c("#FEA520", "#D62246", "#6255B4", "#3C685A")) +
+#   facet_wrap(~trait, scales = "free", ncol = 4) +
+#   theme_light() +
+#   labs(y="Booststrapped CWM")+
+#   guides(col="none", fill="none")+
+#   theme(axis.text.x = element_blank(),
+#         axis.title.x = element_blank(),
+#         panel.grid.minor = element_blank(),
+#         axis.title.y.left = element_text(size = 16),
+#         axis.title.y = element_text(size = 16),
+#         axis.text.y = element_text(size = 15),
+#         strip.background = element_rect(fill = "white"),
+#         strip.text.x = element_text(size = 16, color = "black"))# +
+# #geom_text(data = Tk, aes(x = depth_layer, y = quant, label = cld), size = 3, vjust=0, hjust =0)
+# 
+# ggsave("CWM_boot.png", path = "figures", dpi = 800, height = 13, width = 12)
+
+sum_boot_moment <- trait_summarise_boot_moments(
+  np_bootstrapped_moments
+) %>% 
+  mutate(trait= gsub("_"," ", trait)) %>% 
+   mutate(trait=stringr::str_to_sentence(trait)) 
 
 
-# List of traits/columns in your data frame that you want to analyze
-traits <- names(np_bootstrapped_moments_wide)[!names(np_bootstrapped_moments_wide) %in% "depth_layer"]
-
-# Initialize an empty list to store summary tables for each trait
-summary_tables <- list()
-
-# Loop through each trait
-for (trait in traits) {
-  
-  # Perform ANOVA
-  formula <- as.formula(paste(trait, "~ depth_layer"))
-  anova <- aov(formula, data = np_bootstrapped_moments_wide)
-  
-  # Perform Tukey's test
-  tukey <- TukeyHSD(anova)
-  
-  # Generate compact letter display (CLD)
-  cld <- multcompView::multcompLetters4(anova, tukey)
-  
-  # Summarize the mean and 3rd quantile for each depth_layer
-  Tk <- np_bootstrapped_moments_wide %>%
-    group_by(depth_layer) %>%
-    summarise(mean = mean(.data[[trait]], na.rm = TRUE), 
-              quant = quantile(.data[[trait]], probs = 0.75, na.rm = TRUE)) %>%
-    arrange(desc(mean))
-  
-  # Add the compact letter display to the summary table
-  cld_df <- as.data.frame.list(cld$depth_layer)
-  Tk$cld <- cld_df$Letters
-  
-  # Store the summary table for each trait
-  summary_tables[[trait]] <- Tk
-}
-
-# Reshape data to long format
-long_data <- np_bootstrapped_moments_wide %>%
-  tidyr::pivot_longer(cols = all_of(traits), names_to = "trait", values_to = "value") %>% 
-  mutate(trait= gsub("_"," ", trait))
-
-long_data$depth_layer <- factor(
-  long_data$depth_layer,
+sum_boot_moment$depth_layer <- factor(
+  sum_boot_moment$depth_layer,
   levels = c(
     "Epipelagic",
     "Upper mesopelagic",
@@ -1248,43 +1305,44 @@ long_data$depth_layer <- factor(
   )
 ) 
 
-long_data$trait<- factor(
-  long_data$trait,
+sum_boot_moment$trait <- factor(
+  sum_boot_moment$trait,
   levels = c(
-   "caudal throttle width",
-   "oral gape surface",
-   "gill outflow",
-   "large teeth",
-   "eye size",
-   "orbital length",
-   "small teeth",
-   "transversal shape",
-   "body depth",
-   "dorsal fin insertion",
-   "eye position",
-   "oral gape shape",
-   "oral gape position",
-   "internal teeth",
-   "lower jaw length",
-   "pectoral fin position",
-   "ventral photophores",
-   "operculum volume",
-   "pectoral fin insertion",
-   "head length",
-   "chin barbel",
-   "fang teeth",
-   "gland head"
+    "Caudal throttle width",
+    "Oral gape surface",
+    "Gill outflow",
+    "Large teeth",
+    "Eye size",
+    "Orbital length",
+    "Small teeth",
+    "Transversal shape",
+    "Body depth",
+    "Dorsal fin insertion",
+    "Eye position",
+    "Oral gape shape",
+    "Oral gape position",
+    "Internal teeth",
+    "Lower jaw length",
+    "Pectoral fin position",
+    "Ventral photophores",
+    "Operculum volume",
+    "Pectoral fin insertion",
+    "Head length",
+    "Chin barbel",
+    "Fang teeth",
+    "Gland head",
+    "Retractable teeth"
   )
 ) 
 
-#plot
-ggplot(long_data, aes(x = depth_layer, y = value)) + 
-  geom_boxplot(aes(col = depth_layer, fill = depth_layer), alpha = 0.08, outlier.shape = NA, lwd=0.4) + 
+ggplot(sum_boot_moment, aes(x = depth_layer, y = mean)) + 
+  geom_point(alpha = 0.5, size = 1, position = position_jitter(width = 0.2), aes(col=depth_layer)) +
+  geom_boxplot(aes(group=depth_layer, col=depth_layer, fill=depth_layer), alpha=0.1)+
   scale_color_manual(values = c("#FEA520", "#D62246", "#6255B4", "#3C685A")) +
   scale_fill_manual(values = c("#FEA520", "#D62246", "#6255B4", "#3C685A")) +
   facet_wrap(~trait, scales = "free", ncol = 4) +
   theme_light() +
-  labs(y="Booststrapped CWM")+
+  labs(y="Community biomass-weighted mean (CWM) ")+
   guides(col="none", fill="none")+
   theme(axis.text.x = element_blank(),
         axis.title.x = element_blank(),
@@ -1293,10 +1351,9 @@ ggplot(long_data, aes(x = depth_layer, y = value)) +
         axis.title.y = element_text(size = 16),
         axis.text.y = element_text(size = 15),
         strip.background = element_rect(fill = "white"),
-        strip.text.x = element_text(size = 16, color = "black"))# +
-#geom_text(data = Tk, aes(x = depth_layer, y = quant, label = cld), size = 3, vjust=0, hjust =0)
+        strip.text.x = element_text(size = 16, color = "black"))
 
-ggsave("CWM_boot.png", path = "figures", dpi = 800, height = 13, width = 12)
+ggsave("CWM_boot_sum.png", path = "figures", dpi = 800, height = 13, width = 12)
 
 ```
 
@@ -1310,33 +1367,39 @@ ggsave("CWM_boot.png", path = "figures", dpi = 800, height = 13, width = 12)
 #| fig-width: 9
 #| fig-height: 6
 
-sum_boot_moment <- trait_summarise_boot_moments(
+sum_boot_moment_pca <- trait_summarise_boot_moments(
   np_bootstrapped_moments
 ) %>% 
   ungroup() %>% 
   mutate(trait= gsub("_"," ", trait)) %>% 
+  mutate(trait=stringr::str_to_sentence(trait)) %>% 
   select(c(trait, depth_layer, mean)) %>% 
   group_by(
     depth_layer, trait
   ) %>% 
-  summarise(mean_value= mean(mean)) %>% 
+  summarise(median_value= median(mean)) %>% 
   distinct() %>% 
   ungroup() %>% 
-  tidyr::pivot_wider(id_cols=depth_layer, values_from = "mean_value", names_from = "trait") %>% 
+  tidyr::pivot_wider(id_cols=depth_layer, values_from = "median_value", names_from = "trait") %>% 
   tibble::column_to_rownames(var = "depth_layer")
 
-res.pca <- FactoMineR::PCA(sum_boot_moment, graph = FALSE)
+res.pca <- FactoMineR::PCA(sum_boot_moment_pca, graph = FALSE)
+
+res.pca <- FactoMineR::PCA(sum_boot_moment_pca, graph = FALSE)
+
 
 factoextra::fviz_pca_biplot(res.pca, repel = TRUE,
                             pointsize = 2,
                             arrowsize = 0.2,
-                            title = "", col.var = "contrib",
-                            gradient.cols = c("white", "blue", "red"))+
+                            label="var",
+                            title = "", 
+                            col.var = "contrib",
+                            gradient.cols = c("white", "gray80", "gray40"))+
   theme_light()+
   theme(panel.grid.minor =  element_blank(),
         panel.grid.major = element_blank())
 
-ggsave("PCA_CWM.png", path = "figures", dpi = 700, height = 5, width = 7)
+ggsave("PCA_CWM.png", path = "figures", dpi = 700, height = 6, width = 9)
 
 ```
 
@@ -1552,10 +1615,10 @@ depth_colors <- c("Epipelagic" = "#FEA520",
 plot_depth <- ggplot() +
   # Plot present species
   geom_point(data = sp_coord_community_all_layers %>% filter(layer_presence == "yes"), 
-             aes(PC3, PC4, col = depth_layer, shape = layer_presence), size = 2) +
+             aes(PC3, PC4, col = depth_layer), size = 2, shape=19) +
   # Plot absent species
   geom_point(data = sp_coord_community_all_layers %>% filter(layer_presence == "no"), 
-             aes(PC3, PC4), col = "grey", shape = 19, size = 2) +
+             aes(PC3, PC4), col = "grey", shape = 8, size = 2) +
   # Plot hulls
   geom_polygon(data = hull_all_combined, aes(x = PC3, y = PC4), 
                fill = "lightgrey", alpha = 0.2) +
