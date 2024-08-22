@@ -860,7 +860,7 @@ obsFD_div <- obsFD$functional_diversity_indices
 
 # Null model ----
 # Define the number of replications
-nb_rep <- 1000
+nb_rep <- 10
 
 # Initialize a list to store results of random functional diversity calculations for each index
 indices_names <- colnames(obsFD_div)
@@ -1456,6 +1456,8 @@ ggplot(sp_ri_ui, aes(Ri,Ui))+
   geom_hline(yintercept = stat$mean_ui, linetype = "dashed", color = "black", linewidth = 0.8)+
   geom_vline(xintercept = stat$mean_ri, linetype = "dashed", color = "black", linewidth = 0.8)+
   theme(aspect.ratio = 1,
+         panel.grid.major = element_blank(),
+         panel.grid.minor = element_blank(),
         axis.title = element_text(size=15),
         axis.text = element_text(size=14),
         legend.title = element_text(size=15),
