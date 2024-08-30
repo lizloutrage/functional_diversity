@@ -30,7 +30,7 @@ mpdObs <- melodic(samp = station_sp, dis = sp_dist_fish,
 names(mpdObs) <- rownames(station_sp)
 
 # with n randomization ----
-numberReps <- 100
+numberReps <- 1000
 
 #Lets create a matrix to store results from each iteration (one column per iteration)
 resultsRandom <- matrix(NA, nrow = nrow(station_sp), ncol = numberReps,
@@ -122,6 +122,7 @@ ggplot(SES_plot, aes(x = depth_layer, y = SES, fill = depth_layer)) +
         axis.text = element_text(size = 13))+
   guides(col="none", fill="none")
 
+ggsave("SES_mpd_abundance.png", path = "figures", dpi = 700, height = 7, width = 9)
 
 # Functional Rao index ----
 # Rao index 

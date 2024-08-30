@@ -804,7 +804,7 @@ ggsave("functional_space.png", path = "figures", dpi = 800, height = 8, width = 
 
 - __Standard Effect Size (SES):__ to eliminate the influence of species richness on the functional diversity indices (Mouchet et al., 2010). Measures the deviation from the random expectation in standard deviation units
 
-- __null model frequency__: Randomize community data matrix abundances (here biomasss) within species (maintains species occurence frequency)
+- __null model frequency__: Randomize community data matrix abundances (here biomasss) within species (maintains species occurrence frequency)
 
 - __FRic Functional Richness__: the proportion of functional space filled by species of the studied assemblage, i.e. the volume inside the convex-hull shaping species. To compute FRic the number of species must be at least higher than the number of functional axis + 1.
 
@@ -860,7 +860,7 @@ obsFD_div <- obsFD$functional_diversity_indices
 
 # Null model ----
 # Define the number of replications
-nb_rep <- 10
+nb_rep <- 100
 
 # Initialize a list to store results of random functional diversity calculations for each index
 indices_names <- colnames(obsFD_div)
@@ -1033,10 +1033,9 @@ ggplot(results_df_plot, aes(x = depth_layer, y = values, fill = depth_layer)) +
   geom_hline(yintercept = -1.96, linetype = "dashed", color = "gray50", linewidth = 0.8)+
   guides(col="none", fill="none")
 
-ggsave("SES_indices.png", path = "figures", dpi = 700, height = 7, width = 9)
+ggsave("SES_indices_1000.png", path = "figures", dpi = 700, height = 7, width = 9)
 
 ```
-
 
 # 4. CWM 
 
@@ -1176,118 +1175,6 @@ np_bootstrapped_moments <- traitstrap::trait_np_bootstrap(
   nrep = 100
 )
 
-# np_bootstrapped_moments_wide <- np_bootstrapped_moments %>%
-#   ungroup() %>%
-#   group_by(depth_layer, trait) %>%
-#   mutate(id = row_number()) %>%  
-#   ungroup()%>%
-#   select(trait, depth_layer, mean, id) %>%
-#   tidyr::pivot_wider(
-#     names_from = trait,
-#     values_from = mean
-#   ) %>%
-#   select(-id)
-# 
-# 
-# # List of traits/columns in your data frame that you want to analyze
-# traits <- names(np_bootstrapped_moments_wide)[!names(np_bootstrapped_moments_wide) %in% "depth_layer"]
-# 
-# # Initialize an empty list to store summary tables for each trait
-# summary_tables <- list()
-# 
-# # Loop through each trait
-# for (trait in traits) {
-#   
-#   # Perform ANOVA
-#   formula <- as.formula(paste(trait, "~ depth_layer"))
-#   anova <- aov(formula, data = np_bootstrapped_moments_wide)
-#   
-#   # Perform Tukey's test
-#   tukey <- TukeyHSD(anova)
-#   
-#   # Generate compact letter display (CLD)
-#   cld <- multcompView::multcompLetters4(anova, tukey)
-#   
-#   # Summarize the mean and 3rd quantile for each depth_layer
-#   Tk <- np_bootstrapped_moments_wide %>%
-#     group_by(depth_layer) %>%
-#     summarise(mean = mean(.data[[trait]], na.rm = TRUE), 
-#               quant = quantile(.data[[trait]], probs = 0.75, na.rm = TRUE)) %>%
-#     arrange(desc(mean))
-#   
-#   # Add the compact letter display to the summary table
-#   cld_df <- as.data.frame.list(cld$depth_layer)
-#   Tk$cld <- cld_df$Letters
-#   
-#   # Store the summary table for each trait
-#   summary_tables[[trait]] <- Tk
-# }
-# 
-# # Reshape data to long format
-# long_data <- np_bootstrapped_moments_wide %>%
-#   tidyr::pivot_longer(cols = all_of(traits), names_to = "trait", values_to = "value") %>% 
-#   mutate(trait= gsub("_"," ", trait))
-# 
-# long_data$depth_layer <- factor(
-#   long_data$depth_layer,
-#   levels = c(
-#     "Epipelagic",
-#     "Upper mesopelagic",
-#     "Lower mesopelagic",
-#     "Bathypelagic"
-#   )
-# ) 
-# 
-# long_data$trait<- factor(
-#   long_data$trait,
-#   levels = c(
-#    "caudal throttle width",
-#    "oral gape surface",
-#    "gill outflow",
-#    "large teeth",
-#    "eye size",
-#    "orbital length",
-#    "small teeth",
-#    "transversal shape",
-#    "body depth",
-#    "dorsal fin insertion",
-#    "eye position",
-#    "oral gape shape",
-#    "oral gape position",
-#    "internal teeth",
-#    "lower jaw length",
-#    "pectoral fin position",
-#    "ventral photophores",
-#    "operculum volume",
-#    "pectoral fin insertion",
-#    "head length",
-#    "chin barbel",
-#    "fang teeth",
-#    "gland head"
-#   )
-# ) 
-# 
-# #plot
-# ggplot(long_data, aes(x = depth_layer, y = value)) + 
-#   geom_boxplot(aes(col = depth_layer, fill = depth_layer), alpha = 0.08, outlier.shape = NA, lwd=0.4) + 
-#   scale_color_manual(values = c("#FEA520", "#D62246", "#6255B4", "#3C685A")) +
-#   scale_fill_manual(values = c("#FEA520", "#D62246", "#6255B4", "#3C685A")) +
-#   facet_wrap(~trait, scales = "free", ncol = 4) +
-#   theme_light() +
-#   labs(y="Booststrapped CWM")+
-#   guides(col="none", fill="none")+
-#   theme(axis.text.x = element_blank(),
-#         axis.title.x = element_blank(),
-#         panel.grid.minor = element_blank(),
-#         axis.title.y.left = element_text(size = 16),
-#         axis.title.y = element_text(size = 16),
-#         axis.text.y = element_text(size = 15),
-#         strip.background = element_rect(fill = "white"),
-#         strip.text.x = element_text(size = 16, color = "black"))# +
-# #geom_text(data = Tk, aes(x = depth_layer, y = quant, label = cld), size = 3, vjust=0, hjust =0)
-# 
-# ggsave("CWM_boot.png", path = "figures", dpi = 800, height = 13, width = 12)
-
 sum_boot_moment <- trait_summarise_boot_moments(
   np_bootstrapped_moments
 ) %>% 
@@ -1305,6 +1192,7 @@ sum_boot_moment$depth_layer <- factor(
   )
 ) 
 
+# order traits 
 sum_boot_moment$trait <- factor(
   sum_boot_moment$trait,
   levels = c(
@@ -1347,6 +1235,7 @@ ggplot(sum_boot_moment, aes(x = depth_layer, y = mean)) +
   theme(axis.text.x = element_blank(),
         axis.title.x = element_blank(),
         panel.grid.minor = element_blank(),
+        #panel.grid.major = element_blank(),
         axis.title.y.left = element_text(size = 16),
         axis.title.y = element_text(size = 16),
         axis.text.y = element_text(size = 15),
@@ -1456,7 +1345,6 @@ ggplot(sp_ri_ui, aes(Ri,Ui))+
   geom_hline(yintercept = stat$mean_ui, linetype = "dashed", color = "black", linewidth = 0.8)+
   geom_vline(xintercept = stat$mean_ri, linetype = "dashed", color = "black", linewidth = 0.8)+
   theme(aspect.ratio = 1,
-         panel.grid.major = element_blank(),
          panel.grid.minor = element_blank(),
         axis.title = element_text(size=15),
         axis.text = element_text(size=14),
@@ -1557,13 +1445,12 @@ htmltools::tagList(DT::datatable(combined_results_df))
 sp_coord_community_2 <- as.data.frame(sp_faxes_coord_fish[, c("PC3", "PC4")]) %>%
   tibble::rownames_to_column(var = "species")
 
-
 # Create a list to store data frames for each depth layer
 all_data_layers_2 <- lapply(unique(sp_all_layers$depth_layer), function(layer) {
   sp_layer <- sp_all_layers %>%
     filter(depth_layer == layer)
   
-  # Mark presence or absence
+  #presence or absence
   sp_coord_layer <- sp_coord_community_2 %>%
     mutate(layer_presence = ifelse(species %in% sp_layer$species, "yes", "no")) %>%
     mutate(depth_layer = layer)
@@ -1576,7 +1463,7 @@ sp_coord_community_all_layers <- bind_rows(all_data_layers_2)
 
 # Function to calculate the convex hull for a given data frame
 calculate_hull <- function(data) {
-  if (nrow(data) < 3) return(data)  # Handle cases with fewer than 3 points
+  if (nrow(data) < 3) return(data)  
   data %>%
     slice(chull(PC3, PC4))
 }
@@ -1599,10 +1486,9 @@ for(layer in unique(sp_coord_community_all_layers$depth_layer)) {
   hull_layer_combined <- bind_rows(hull_layer_combined, hull_layer)
 }
 
-# Define depth layer levels in desired order
+# Define depth layer levels
 depth_levels <- c("Epipelagic", "Upper mesopelagic", "Lower mesopelagic", "Bathypelagic")
 
-# Ensure depth_layer is a factor with specified levels
 sp_coord_community_all_layers$depth_layer <- factor(sp_coord_community_all_layers$depth_layer, levels = depth_levels)
 hull_all_combined$depth_layer <- factor(hull_all_combined$depth_layer, levels = depth_levels)
 hull_layer_combined$depth_layer <- factor(hull_layer_combined$depth_layer, levels = depth_levels)
@@ -1613,7 +1499,7 @@ depth_colors <- c("Epipelagic" = "#FEA520",
                   "Lower mesopelagic" = "#6255B4", 
                   "Bathypelagic" = "#3C685A")
 
-# Plotting
+# Plot
 plot_depth <- ggplot() +
   # Plot present species
   geom_point(data = sp_coord_community_all_layers %>% filter(layer_presence == "yes"), 
