@@ -903,30 +903,10 @@ for (rep in 1:nb_rep) {
 }
 
 # Initialize dataframes to store mean, standard deviation, effect size, and standardized effect size
-meanNullFD <-
-  data.frame(matrix(
-    NA,
-    nrow = nrow(depth_fish_biomass),
-    ncol = length(indices_names)
-  ))
-sdNullFD <-
-  data.frame(matrix(
-    NA,
-    nrow = nrow(depth_fish_biomass),
-    ncol = length(indices_names)
-  ))
-ES_FD <-
-  data.frame(matrix(
-    NA,
-    nrow = nrow(depth_fish_biomass),
-    ncol = length(indices_names)
-  ))
-SES_FD <-
-  data.frame(matrix(
-    NA,
-    nrow = nrow(depth_fish_biomass),
-    ncol = length(indices_names)
-  ))
+meanNullFD <- data.frame(matrix(NA, nrow = nrow(depth_fish_biomass), ncol = length(indices_names)))
+sdNullFD <- data.frame(matrix(NA, nrow = nrow(depth_fish_biomass), ncol = length(indices_names)))
+ES_FD <- data.frame(matrix(NA, nrow = nrow(depth_fish_biomass), ncol = length(indices_names)))
+SES_FD <- data.frame(matrix(NA, nrow = nrow(depth_fish_biomass), ncol = length(indices_names)))
 
 # Set column names for the dataframes
 colnames(meanNullFD) <- indices_names
@@ -934,7 +914,10 @@ colnames(sdNullFD) <- indices_names
 colnames(ES_FD) <- indices_names
 colnames(SES_FD) <- indices_names
 
-# Calculate statistics for each index
+# Dataframe to store SES values for testing normality
+SES_values_reps <- data.frame()
+
+# Calculate statistics and SES for each index and store SES in both dataframes
 for (index_name in indices_names) {
   # Calculate mean and standard deviation of null model FD values for each index
   meanNullFD[, index_name] <- rowMeans(resultsRandomFD[[index_name]], na.rm = TRUE)
@@ -943,6 +926,20 @@ for (index_name in indices_names) {
   # Calculate effect size and standardized effect size for each index
   ES_FD[, index_name] <- obsFD_div[, index_name] - meanNullFD[, index_name]
   SES_FD[, index_name] <- ES_FD[, index_name] / sdNullFD[, index_name]
+  
+  # Calculate SES for each repetition and add to SES_values_reps dataframe
+  for (rep in 1:nb_rep) {
+    SES_repetition <- (resultsRandomFD[[index_name]][, rep] - meanNullFD[, index_name]) / sdNullFD[, index_name]
+    SES_values_reps <- rbind(
+      SES_values_reps,
+      data.frame(
+        depth_layer = rownames(depth_fish_biomass),
+        SES = SES_repetition,
+        index = index_name,
+        repetition = paste0("Rep_", rep)
+      )
+    )
+  }
 }
 
 # Combine all results into a single dataframe
@@ -957,7 +954,7 @@ results_df <- cbind(
 # Add row names
 rownames(results_df) <- rownames(depth_fish_biomass)
 
-# Plot  ----
+# Plot ----
 # Output the results dataframe
 results_df_plot <- results_df %>%
   tibble::rownames_to_column(var = "depth_layer") %>%
@@ -1006,7 +1003,7 @@ ggplot(results_df_plot, aes(x = depth_layer, y = values, fill = depth_layer)) +
         strip.text.x = element_text(size = 14, color = "black"),
         strip.background = element_rect(fill = "white"),
         axis.title = element_text(size = 13),
-        axis.text = element_text(size = 13))+
+        axis.text = element_text(size = 13)) +
   guides(col="none", fill="none")
 
 ggsave("SES_indices_1000_depth_layer.png", path = "figures", dpi = 700, height = 6, width = 8)
@@ -1027,41 +1024,21 @@ ggsave("SES_indices_1000_depth_layer.png", path = "figures", dpi = 700, height =
 #| fig-width: 8
 #| fig-height: 8
 
-test_norm_ind <- do.call(rbind.data.frame, resultsRandomFD) %>%
-  tibble::rownames_to_column(var = "indices") %>%
-  tidyr::pivot_longer(!indices, values_to = "values", names_to = "num_sim") %>%
-  filter(
-    indices %in% c(
-      "fdis.Upper mesopelagic",
-      "fdis.Bathypelagic",
-      "fdis.Epipelagic",
-      "fdis.Lower mesopelagic",
-      "feve.Upper mesopelagic",
-      "feve.Bathypelagic" ,
-      "feve.Epipelagic",
-      "feve.Lower mesopelagic",
-      "fric.Upper mesopelagic",
-      "fric.Bathypelagic",
-      "fric.Epipelagic",
-      "fric.Lower mesopelagic",
-      "fdiv.Upper mesopelagic",
-      "fdiv.Bathypelagic",
-      "fdiv.Epipelagic",
-      "fdiv.Lower mesopelagic"
-    )
-  )
+# normality and symetry tests ----
+test_norm  <- SES_values_reps %>%
+  tibble::remove_rownames() %>%
+  filter(index %in% c("fdis", "fdiv", "feve", "fric"))
 
-# Compute skewness and Shapiro-Wilk test to check normaltiy and symetry 
-stat_indices <- test_norm_ind %>% 
-  group_by(indices) %>% 
+# Compute skewness and Lilliefors tests to check normaltiy and symetry 
+stat_indices <- test_norm %>% 
+  group_by(index, depth_layer) %>% 
   summarise(
-    skewness = round(e1071::skewness(values),2),
-    shapiro_p = round(shapiro.test(values)$p.value,2)
+    skewness = round(e1071::skewness(SES),2),
+    Lilliefors_pvalue = round(nortest::lillie.test(SES)$p.value,2)
   )
 
 htmltools::tagList(DT::datatable(stat_indices))
 ```
-
 
 - the red dashed line = normal distribution
 ```{r}
@@ -1072,16 +1049,25 @@ htmltools::tagList(DT::datatable(stat_indices))
 #| fig-width: 10
 #| fig-height: 8
 
+test_norm$depth_layer <- factor(
+  test_norm$depth_layer,
+  levels = c(
+    "Epipelagic",
+    "Upper mesopelagic",
+    "Lower mesopelagic",
+    "Bathypelagic"
+  )
+)
+
 # Density plot with normal density overlay
-ggpubr::ggdensity(test_norm_ind, x = "values", fill = "gray", col = "white") +
-  facet_wrap(~indices, scales = "free") +
+ggpubr::ggdensity(test_norm, x = "SES", fill = "gray", col = "white") +
+  facet_grid(depth_layer~index, scales = "free") +
   ggpubr::stat_overlay_normal_density(color = "red", linetype = "dashed", size = 1) +  
   theme_light() +
   labs(title = "Distribution of values of the random communites in compariaosn to the normal distribution",
        x = "Values", 
        y = "Density")
 ```
-
 
 # 4. CWM 
 
@@ -1381,21 +1367,21 @@ stat <- sp_ri_ui %>%
             mean_ri = mean(Ri)) 
 
 ggplot(sp_ri_ui, aes(Ri,Ui))+
-  geom_point(size = 2.7, aes(shape=order))+
-  ggrepel::geom_text_repel(aes(label = species), col="grey70", max.overlaps=3, size=4.5)+
-  scale_shape_manual(values = c(8, 16, 7, 17, 19, 15, 3, 25,22))+
+  geom_point(size = 3, aes(shape=order))+
+  ggrepel::geom_text_repel(aes(label = species), col="grey60", max.overlaps=30, size=5.2)+
+  scale_shape_manual(values = c(8, 4, 7, 17,16,5, 15, 3, 25,22))+
   labs(y = "Functional Uniqueness", x = "Geographical Restrictedness", shape="Taxonomic order")+
   theme_bw()+
   geom_hline(yintercept = stat$mean_ui, linetype = "dashed", color = "black", linewidth = 0.8)+
   geom_vline(xintercept = stat$mean_ri, linetype = "dashed", color = "black", linewidth = 0.8)+
   theme(aspect.ratio = 1,
-         panel.grid.minor = element_blank(),
+        panel.grid.minor = element_blank(),
         axis.title = element_text(size=15),
-        axis.text = element_text(size=14),
+        axis.text = element_text(size=15),
         legend.title = element_text(size=15),
-        legend.text = element_text(size=14))
+        legend.text = element_text(size=15))
 
-ggsave("Uniqueness_Ri.png", path = "figures", dpi = 700, height = 8, width = 10)
+ggsave("Uniqueness_Ri.png", path = "figures", dpi = 700, height = 9, width = 11)
 ```
 
 __which traits are mainly driving uniqueness ?__
