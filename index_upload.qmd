@@ -854,7 +854,7 @@ obsFD_div <- obsFD$functional_diversity_indices
 
 # Null model ----
 # Define the number of replications
-nb_rep <- 1000
+nb_rep <- 10
 
 # Initialize a list to store results of random functional diversity calculations for each index
 indices_names <- colnames(obsFD_div)
@@ -1860,7 +1860,7 @@ obsFD_div <- obsFD$functional_diversity_indices
 
 # Null model ----
 # Define the number of replications
-nb_rep <- 1000
+nb_rep <- 10
 null_model_used <- "richness"
 
 # Initialize a list to store results of random functional diversity calculations for each index
@@ -2046,7 +2046,7 @@ test_norm  <- SES_values_reps %>%
   tibble::remove_rownames() %>%
   filter(index %in% c("fdis", "fdiv", "feve"))
 
-# Compute skewness and Lilliefors tests to check normaltiy and symetry 
+# Compute skewness and Lilliefors tests to check normality and symmetry 
 stat_indices <- test_norm %>% 
   group_by(index, depth_layer) %>% 
   summarise(
@@ -2082,7 +2082,7 @@ obsFD_div <- obsFD$functional_diversity_indices
 
 # Null model ----
 # Define the number of replications
-nb_rep <- 1000
+nb_rep <- 10
 
 # Initialize a list to store results of random functional diversity calculations for each index
 indices_names <- colnames(obsFD_div)
@@ -2239,12 +2239,12 @@ ggsave("SES_frequency_community.png", path = "figures", dpi = 700, height = 3, w
 #| warning: false
 #| message: false
 
-# normality and symetry tests ----
+# normality and symmetry tests ----
 test_norm  <- SES_values_reps %>%
   tibble::remove_rownames() %>%
   filter(index %in% c("fric"))
 
-# Compute skewness and Lilliefors tests to check normaltiy and symetry 
+# Compute skewness and Lilliefors tests to check normality and symmetry 
 stat_indices <- test_norm %>% 
   summarise(
     skewness = round(e1071::skewness(SES),2),
