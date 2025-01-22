@@ -1,37 +1,3 @@
-########################
-## Code pour randomiser les traits ind?pendamment pour briser les relations entre esp?ces et traits
-########################
-
-#exemple au lieu de la matrice de valeurs observ?es
-set.seed(123)
-species <- 15 # nombre d'esp?ces
-traits <- 5   # nombre de traits
-
-mat_traits <- matrix(runif(species * traits, 0, 1), nrow = species, ncol = traits)
-rownames(mat_traits) <- paste0("Species_", 1:species)
-colnames(mat_traits) <- paste0("Trait_", 1:traits)
-
-## fonction pour randomiser les valeurs des traits entre les esp?ces
-randomize_matrix_swap_traits <- function(mat) {
-  n_species <- nrow(mat)
-  n_traits <- ncol(mat)
-  
-  randomized_mat <- mat
-  for (i in 1:n_traits) {
-    randomized_mat[, i] <- sample(mat[, i])  # Je rendomise les valeurs de chaque colonne
-  }
-  
-  return(randomized_mat)
-}
-
-## simulation des 1000 matrices
-n_simulations <- 10
-randomized_matrices <- vector("list", n_simulations)
-
-# Appliquer la randomisation 1000 fois et stocker les r?sultats
-for (k in 1:n_simulations) {
-  randomized_matrices[[k]] <- randomize_matrix_swap_traits(mat)
-}
 
 #Tests ----
 
@@ -49,7 +15,7 @@ randomize_matrix_swap_traits <- function(mat) {
 }
 
 # Number of simulations
-n_simulations <- 100
+n_simulations <- 10
 
 # Create a list to store random matrices
 randomized_matrices <- vector("list", n_simulations)
@@ -182,6 +148,7 @@ ggplot(results_df_plot, aes(x = depth_layer, y = values, fill = depth_layer)) +
   geom_point(size = 3, aes(col=depth_layer)) +
   scale_color_manual(values = c("#FEA520", "#D62246", "#6255B4", "#3C685A")) +
   scale_fill_manual(values = c("#FEA520", "#D62246", "#6255B4", "#3C685A")) +
+  ylim(-3,3)+
   labs(
     x = "",
     y = "Standard Effect Size (SES)") +

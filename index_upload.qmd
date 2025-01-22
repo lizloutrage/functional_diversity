@@ -1983,10 +1983,10 @@ results_df_plot <- results_df %>%
   tidyr::pivot_longer(!depth_layer,
                       values_to = "values",
                       names_to = "indice") %>%
-  mutate(indice = stringr::str_replace(indice, "^SES_", "")) %>%
-  filter(indice %in% c("FD.fdis",
-                       "FD.fdiv",
-                       "FD.feve"))
+  filter(indice %in% c("SES_FD.fdis",
+                       "SES_FD.fdiv",
+                       "SES_FD.feve"))
+
 
 results_df_plot$depth_layer <- factor(
   results_df_plot$depth_layer,
@@ -1999,16 +1999,15 @@ results_df_plot$depth_layer <- factor(
 )
 results_df_plot$indice <- factor(
   results_df_plot$indice,
-  levels = c("FD.fdis",
-             "FD.fdiv",
-             "FD.feve"),
+  levels = c("SES_FD.fdis",
+             "SES_FD.fdiv",
+             "SES_FD.feve"),
   labels = c(
     "Functional dispersion",
     "Functional divergence",
     "Functional evenness"
   )
 )
-
 
 ggplot(results_df_plot, aes(x = depth_layer, y = values, fill = depth_layer)) +
   facet_wrap(~indice, ncol=2) +
@@ -2031,7 +2030,7 @@ ggplot(results_df_plot, aes(x = depth_layer, y = values, fill = depth_layer)) +
   ) +
   guides(col = "none", fill = "none")
 
-ggsave("SES_by_depth_layer_richness.png", path = "figures", dpi = 700, height = 6, width = 8)
+ggsave("SES_by_depth_layer_richness2.png", path = "figures", dpi = 700, height = 6, width = 8)
 ```
 
 ### 7.1.1. tests normalité et symétrie
@@ -2191,8 +2190,7 @@ results_df_plot <- results_df %>%
   tidyr::pivot_longer(!depth_layer,
                       values_to = "values",
                       names_to = "indice") %>%
-  mutate(indice = stringr::str_replace(indice, "^SES_", "")) %>%
-  filter(indice %in% c("FD.fric"))
+  filter(indice %in% c("SES_FD.fric"))
 
 
 results_df_plot$depth_layer <- factor(
@@ -2204,9 +2202,10 @@ results_df_plot$depth_layer <- factor(
     "Bathypelagic"
   )
 )
+
 results_df_plot$indice <- factor(
   results_df_plot$indice,
-  levels = c("FD.fric"),
+  levels = c("SES_FD.fric"),
   labels = c(
     "Functional richness"
   )
