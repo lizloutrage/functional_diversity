@@ -816,7 +816,7 @@ ggsave("functional_space.png", path = "figures", dpi = 800, height = 8, width = 
 
 ```
 
-# 3. SES Functional diversity indices 
+# 3. SES Functional diversity indices
 
 ## 3.1.calculate and plot SES
 
@@ -2252,3 +2252,122 @@ stat_indices <- test_norm %>%
 
 htmltools::tagList(DT::datatable(stat_indices))
 ```
+
+# 8. dbFD package 
+
+```{r}
+#| echo: true
+#| label: ses_dbFD
+#| warning: false
+#| message: false
+#| fig-width: 9
+#| fig-height: 6
+
+# Load data
+depth_fish_biomass <- read.csv(here::here("data", "depth_fish_biomass.csv"), row.names = 1, sep = ";", dec = ".")
+fish_traits <- read.csv(here::here("data", "fish_traits.csv"), row.names = 1, sep = ";", dec = ".")
+
+# Convert character traits to factor
+fish_traits <- fish_traits %>% mutate(across(where(is.character), as.factor))
+
+# Function to randomize traits while preserving factor levels
+randomize_traits <- function(traits_mat) {
+  randomized_mat <- traits_mat
+  for (trait in colnames(traits_mat)) {
+    if (is.factor(traits_mat[[trait]])) {
+      randomized_mat[[trait]] <- factor(sample(traits_mat[[trait]], replace = FALSE), levels = levels(traits_mat[[trait]]))
+    } else {
+      randomized_mat[[trait]] <- sample(traits_mat[[trait]], replace = FALSE)
+    }
+  }
+  return(randomized_mat)
+}
+
+# Number of simulations
+n_simulations <- 99
+
+# Depth layers
+depth_layers <- rownames(depth_fish_biomass)
+
+# Liste des indices à calculer
+indices <- c("FRic", "FDis", "RaoQ", "FEve", "FDiv") 
+
+# Matrices pour stocker les résultats observés et simulés
+dbFD_result_obs <- matrix(NA, nrow = length(depth_layers), ncol = length(indices), 
+                          dimnames = list(depth_layers, indices))
+
+dbFD_result_sim <- array(NA, dim = c(length(depth_layers), n_simulations, length(indices)), 
+                         dimnames = list(depth_layers, paste0("Sim.", 1:n_simulations), indices))
+
+# Boucle sur chaque couche de profondeur
+for (layer in depth_layers) {
+  
+  # Sélectionner les espèces présentes
+  species_in_layer <- colnames(depth_fish_biomass)[depth_fish_biomass[layer, ] > 0]
+  
+  # Filtrer les traits et retirer les colonnes constantes
+  traits_layer <- fish_traits[species_in_layer, , drop = FALSE] %>%
+    select(where(~ length(unique(.)) > 1))  
+  
+  # Skip si aucun trait variable
+  if (ncol(traits_layer) == 0) next  
+  
+  # Formatage correct de biomass_layer avec la couche de profondeur en rownames
+  biomass_layer <- matrix(as.numeric(depth_fish_biomass[layer, species_in_layer, drop = FALSE]), 
+                          nrow = 1, dimnames = list(layer, species_in_layer))
+  
+  # Calcul des indices observés avec dbFD
+  dbFD_result <- FD::dbFD(x = traits_layer, w.abun = TRUE, m = 4, a = biomass_layer, messages=F)
+  
+  # Stockage des valeurs observées
+  dbFD_result_obs[layer, "FRic"] <- dbFD_result$FRic
+  dbFD_result_obs[layer, "FDis"] <- dbFD_result$FDis
+  dbFD_result_obs[layer, "RaoQ"] <- dbFD_result$RaoQ
+  dbFD_result_obs[layer, "FEve"] <- dbFD_result$FEve
+  dbFD_result_obs[layer, "FDiv"] <- dbFD_result$FDiv  
+  
+  # Simulations pour chaque couche
+  for (sim in 1:n_simulations) {
+    randomized_traits <- randomize_traits(traits_layer)
+    
+    dbFD_sim_result <- FD::dbFD(x = randomized_traits, w.abun = TRUE, m = 4, a = biomass_layer, messages=F)
+    
+    # Stockage des valeurs simulées
+    dbFD_result_sim[layer, sim, "FRic"] <- dbFD_sim_result$FRic
+    dbFD_result_sim[layer, sim, "FDis"] <- dbFD_sim_result$FDis
+    dbFD_result_sim[layer, sim, "RaoQ"] <- dbFD_sim_result$RaoQ
+    dbFD_result_sim[layer, sim, "FEve"] <- dbFD_sim_result$FEve
+    dbFD_result_sim[layer, sim, "FDiv"] <- dbFD_sim_result$FDiv 
+  }  
+}
+
+# Calcul du SES (Standardized Effect Size) pour chaque indice séparément
+SES_results <- data.frame(depth_layer = rownames(dbFD_result_obs))
+
+for (index in indices) {
+  meanNullFD <- rowMeans(dbFD_result_sim[, , index], na.rm = TRUE)
+  sdNullFD <- apply(dbFD_result_sim[, , index], 1, sd, na.rm = TRUE)
+  SES_results[[index]] <- (dbFD_result_obs[, index] - meanNullFD) / sdNullFD
+}
+
+# Transformation des résultats pour ggplot
+results_df <- tidyr::pivot_longer(SES_results, cols = -depth_layer, names_to = "Index", values_to = "SES_FD")
+
+# Convertir depth_layer en facteur pour le bon ordre
+results_df$depth_layer <- factor(results_df$depth_layer, levels = c("Epipelagic", "Upper mesopelagic", "Lower mesopelagic", "Bathypelagic"))
+
+
+# Plot 
+ggplot(results_df, aes(x = depth_layer, y = SES_FD, color = depth_layer)) +
+  geom_point(size = 3) +
+  geom_hline(yintercept = c(1.96, -1.96), linetype = "dashed", color = "gray50") +
+  scale_color_manual(values = c("#FEA520", "#D62246", "#6255B4", "#3C685A")) +
+  labs(x = "", y = "Standard Effect Size (SES)") +
+  facet_wrap(~Index) +
+  theme_light() +
+  theme(axis.text.x = element_blank())
+
+ggsave("SES_dbFD.png", path = "figures", dpi = 700, height = 5, width = 7)
+
+```
+

@@ -1,4 +1,3 @@
-
 # Define randomization function for traits
 randomize_matrix_swap_traits <- function(mat) {
   n_species <- nrow(mat)
@@ -6,41 +5,41 @@ randomize_matrix_swap_traits <- function(mat) {
   
   randomized_mat <- mat
   for (i in 1:n_traits) {
-    randomized_mat[, i] <- sample(mat[, i])  # Randomize each column independently
+    randomized_mat[, i] <- sample(mat[, i], replace=TRUE)  # Randomize each column independently
   }
   
   return(randomized_mat)
 }
 
 # Number of simulations
-n_simulations <- 10  # Set to 999 for robust null model results
+n_simulations <- 999
 
-# Names of functional diversity indices
-indices_names <- c("fdis", "feve", "fric", "fdiv")  # Indices to compute
+# Keep only "fric" for functional diversity index
+indice_name <- c("fric") 
 
 # Calculate functional diversity for the observed data ----
 obsFD <- mFD::alpha.fd.multidim(
   sp_faxes_coord = sp_faxes_coord_fish[, c("PC1", "PC2", "PC3", "PC4")],
   asb_sp_w = depth_fish_biomass,
-  ind_vect = indices_names,
+  ind_vect = indice_name,  
   scaling = TRUE,
   check_input = TRUE,
   details_returned = F
 )
 
-# Initialize a list to store results for each index
-resultsRandomFD <- lapply(indices_names, function(index_name) {
-  matrix(
+# Initialize a list to store results for "fric"
+resultsRandomFD <- list(
+  fric = matrix(
     NA,
     nrow = nrow(depth_fish_biomass),  # Number of assemblages
     ncol = n_simulations,             # Number of simulations
     dimnames = list(rownames(depth_fish_biomass), paste0("Sim.", 1:n_simulations))
   )
-})
-names(resultsRandomFD) <- indices_names
+)
 
 # Perform simulations
 for (sim in 1:n_simulations) {
+  
   # Step 1: Randomize the traits
   randomized_traits <- randomize_matrix_swap_traits(fish_traits)
   
@@ -66,62 +65,44 @@ for (sim in 1:n_simulations) {
   
   sp_faxes_coord_fish_random <- fspaces_quality_fish_random$"details_fspaces"$"sp_pc_coord"
   
-  # Step 4: Compute functional diversity indices for the random space
+  # Step 4: Compute functional diversity index "fric"
   simFD_cal <- mFD::alpha.fd.multidim(
     sp_faxes_coord = sp_faxes_coord_fish_random[, c("PC1", "PC2", "PC3", "PC4")],
     asb_sp_w = depth_fish_biomass,
-    ind_vect = indices_names,
+    ind_vect = indice_name, 
     scaling = TRUE,
     check_input = TRUE,
     details_returned = FALSE
   )
   
-  # Step 5: Store results for each index
-  simFD_div <- simFD_cal$functional_diversity_indices
-  for (index_name in indices_names) {
-    resultsRandomFD[[index_name]][, sim] <- simFD_div[, index_name]
-  }
+  # Step 5: Store results for "fric"
+  resultsRandomFD$fric[, sim] <- simFD_cal$functional_diversity_indices[, "fric"]
 }
 
-# Initialize dataframes to store mean, standard deviation, effect size, and SES
-meanNullFD <- data.frame(matrix(NA, nrow = nrow(depth_fish_biomass), ncol = length(indices_names)))
-sdNullFD <- data.frame(matrix(NA, nrow = nrow(depth_fish_biomass), ncol = length(indices_names)))
-ES_FD <- data.frame(matrix(NA, nrow = nrow(depth_fish_biomass), ncol = length(indices_names)))
-SES_FD <- data.frame(matrix(NA, nrow = nrow(depth_fish_biomass), ncol = length(indices_names)))
+# Initialize dataframes for mean, standard deviation, effect size, and SES
+meanNullFD <- data.frame(fric = rowMeans(resultsRandomFD$fric, na.rm = TRUE))
+sdNullFD <- data.frame(fric = apply(resultsRandomFD$fric, 1, sd, na.rm = TRUE))
 
-# Add column names
-colnames(meanNullFD) <- indices_names
-colnames(sdNullFD) <- indices_names
-colnames(ES_FD) <- indices_names
-colnames(SES_FD) <- indices_names
+# Effect size (ES) and standardized effect size (SES)
+ES_FD <- data.frame(fric = obsFD$functional_diversity_indices[, "fric"] - meanNullFD$fric)
+SES_FD <- data.frame(fric = ES_FD$fric / sdNullFD$fric)
 
-
-# Calculate SES for each index
-for (index_name in indices_names) {
-  # Mean and standard deviation of null model results
-  meanNullFD[, index_name] <- rowMeans(resultsRandomFD[[index_name]], na.rm = TRUE)
-  sdNullFD[, index_name] <- apply(resultsRandomFD[[index_name]], 1, sd, na.rm = TRUE) 
-  
-  # Effect size (ES) and standardized effect size (SES)
-  ES_FD[, index_name] <- obsFD$functional_diversity_indices[, index_name] - meanNullFD[, index_name]
-  SES_FD[, index_name] <- ES_FD[, index_name] / sdNullFD[, index_name]
-}
 # Combine results into a single dataframe
 results_df <- cbind(
   obsFD$functional_diversity_indices,
-  meanNullFD = meanNullFD,
-  sdNullFD = sdNullFD,
-  ES_FD = ES_FD,
-  SES_FD = SES_FD
+  meanNullFD = setNames(meanNullFD, paste0("meanNullFD.", names(meanNullFD))),
+  sdNullFD = setNames(sdNullFD, paste0("sdNullFD.", names(sdNullFD))),
+  ES_FD = setNames(ES_FD, paste0("ES_FD.", names(ES_FD))),
+  SES_FD = setNames(SES_FD, paste0("SES_FD.", names(SES_FD)))
 )
 
-# Prepare data for plotting
+# Prepare data for plotting (filter only "SES_FD.fric")
 results_df_plot <- results_df %>%
   tibble::rownames_to_column(var = "depth_layer") %>%
   tidyr::pivot_longer(!depth_layer,
                       values_to = "values",
                       names_to = "indice") %>%
-  filter(indice =="SES_FD.fric")
+  filter(indice == "SES_FD.fric")
 
 results_df_plot$depth_layer <- factor(
   results_df_plot$depth_layer,
@@ -135,16 +116,16 @@ results_df_plot$depth_layer <- factor(
 
 # Plot SES results
 ggplot(results_df_plot, aes(x = depth_layer, y = values)) +
-  geom_point(size = 5, aes(color = depth_layer)) +
-  geom_smooth(method = "lm")+
-  geom_hline(yintercept = 1.96, linetype = "dashed", color = "gray50", linewidth = 0.8)+
-  geom_hline(yintercept = -1.96, linetype = "dashed", color = "gray50", linewidth = 0.8)+
+  geom_point(size = 3, aes(color = depth_layer)) +
+  geom_hline(yintercept = 1.96, linetype = "dashed", color = "gray50", linewidth = 0.8) +
+  geom_hline(yintercept = -1.96, linetype = "dashed", color = "gray50", linewidth = 0.8) +
   scale_color_manual(values = c("#FEA520", "#D62246", "#6255B4", "#3C685A")) +
-  ylim(-3, 3) +
+  ylim(-4, 4) +
   labs(
     x = "",
-    y = "Standard Effect Size (SES)") +
-  guides(col="none")+
-  theme_light()+
-    theme(axis.title = element_text(size = 13),
-          axis.text = element_text(size = 13))
+    y = "Standard Effect Size (SES)"
+  ) +
+  guides(col = "none") +
+  theme_light() +
+  theme(axis.title = element_text(size = 13),
+        axis.text.y = element_text(size = 9))

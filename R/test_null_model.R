@@ -30,7 +30,7 @@ mpdObs <- melodic(samp = station_sp, dis = sp_dist_fish,
 names(mpdObs) <- rownames(station_sp)
 
 # with n randomization ----
-numberReps <- 1000
+numberReps <- 100
 
 #Lets create a matrix to store results from each iteration (one column per iteration)
 resultsRandom <- matrix(NA, nrow = nrow(station_sp), ncol = numberReps,
@@ -302,6 +302,7 @@ ggplot(SESMPD_plot, aes(x = depth_layer, y = SES, fill = depth_layer)) +
         axis.title = element_text(size = 13),
         axis.text = element_text(size = 13))+
   guides(col="none", fill="none")
+
 
 
 # biotic interactions ----
