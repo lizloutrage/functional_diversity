@@ -404,6 +404,7 @@ depth_fish_biomass <-
   mutate(biomass = sum(biomass_cpu)) %>%
   select(-c(biomass_cpu)) %>%
   distinct() %>%
+  arrange(species) %>% 
   tidyr::pivot_wider(names_from = species, values_from = biomass) %>%
   replace(is.na(.), 0) %>%
   tibble::column_to_rownames(var = "depth_layer") %>%
@@ -832,146 +833,113 @@ ggsave("functional_space.png", path = "figures", dpi = 800, height = 8, width = 
 
 - __FEve Functional Evenness__: the regularity of biomass distribution in the functional space using the Minimum Spanning Tree linking all species present in the assemblage.
 
+- calcul des indices avec package FD
+- correction distance matrix (obtenue avec Gower) = "none" or "lingoes" transformation avec "sqrt" ne permet pas de transformer la matrice en "euclidean"
+- randomisation des traits des espèces par couche de profondeur
+
+- __interprétation__ : La richesse fonctionnelle (FRic) augmente avec la profondeur pour atteindre un maximum en bathypélagique, ce qui correspond à nos anciens résultats. Cependant, les valeurs de SES FRic sont également positives en épipélagique, ce qui indique une richesse fonctionnelle plus élevée qu'attendue au hasard. 
+En revanche, les SES FDIS sont significativement plus faibles en épipélagique, ce qui indique que les espèces représentant le plus de biomasse sont similaires sur le plan fonctionnel. 
+- comment faire pour tester la symétrie et la normalité des valeurs de SES, suelement sur les quatres valeurs que j'obtiens par indices ? 
 ```{r}
 #| echo: true
-#| label: ses_depth_layer
+#| label: ses_dbFD
 #| warning: false
 #| message: false
-#| fig-width: 6
+#| fig-width: 7
 #| fig-height: 6
 
-# Calculate functional diversity for the observed data ----
-obsFD <- mFD::alpha.fd.multidim(
-  sp_faxes_coord = sp_faxes_coord_fish[, c("PC1", "PC2", "PC3", "PC4")],
-  asb_sp_w = depth_fish_biomass,
-  ind_vect = c("fdis", "feve", "fric", "fdiv"),
-  scaling = TRUE,
-  check_input = TRUE,
-  details_returned = F
-)
+# Model parameters ----
+# Number of simulations
+n_simulations <- 9999
 
-obsFD_div <- obsFD$functional_diversity_indices
+# correction method to use when the distance matrix cannot be represented in a Euclidean space
+corr_method <- "lingoes"# "none" 
 
-# Null model ----
-# Define the number of replications
-nb_rep <- 10
+# Depth layers
+depth_layers <- rownames(depth_fish_biomass)
 
-# Initialize a list to store results of random functional diversity calculations for each index
-indices_names <- colnames(obsFD_div)
-resultsRandomFD <- list()
+# List of indices to be calculated
+indices <- c("FRic", "FDis", "FDiv", "FEve") 
 
-for (index_name in indices_names) {
-  resultsRandomFD[[index_name]] <- matrix(
-    NA,
-    nrow = nrow(depth_fish_biomass),
-    ncol = nb_rep,
-    dimnames = list(rownames(depth_fish_biomass), paste0("Sim.", 1:nb_rep))
-  )
+# Matrices for storing observed and simulated results
+dbFD_result_obs <- matrix(NA, nrow = length(depth_layers), ncol = length(indices), 
+                          dimnames = list(depth_layers, indices))
+
+dbFD_result_sim <- array(NA, dim = c(length(depth_layers), n_simulations, length(indices)), 
+                         dimnames = list(depth_layers, paste0("Sim.", 1:n_simulations), indices))
+
+# Function to randomize traits while preserving factor levels----
+randomize_traits <- function(traits_mat) {
+  randomized_mat <- traits_mat
+  # Randomisation of columns
+  for (trait in colnames(traits_mat)) {
+    randomized_mat[, trait] <- sample(traits_mat[, trait], replace = FALSE)
+  }
+  return(randomized_mat)
 }
 
-# Perform randomization and calculate functional diversity for each replication
-for (rep in 1:nb_rep) {
-  randomize_mx <- picante::randomizeMatrix(samp = depth_fish_biomass,
-                                           null.model = "frequency",
-                                           iterations = 1)
+# Loop on each depth layer ----
+for (layer in depth_layers) {
   
-  simFD_cal <- mFD::alpha.fd.multidim(
-    sp_faxes_coord = sp_faxes_coord_fish[, c("PC1", "PC2", "PC3", "PC4")],
-    asb_sp_w = randomize_mx,
-    ind_vect = c("fdis", "feve", "fric", "fdiv"),
-    scaling = TRUE,
-    check_input = TRUE,
-    details_returned = F
-  )
+  # Select the species present in the selected depth layer
+  species_in_layer <- colnames(depth_fish_biomass)[depth_fish_biomass[layer, ] > 0]
   
-  simFD_div <- simFD_cal$functional_diversity_indices
+  # Filter lines (traits) and remove constant columns
+  traits_layer <- fish_traits[species_in_layer, , drop = FALSE] %>%
+    select(where(~ length(unique(.)) > 1))  
   
-  for (index_name in indices_names) {
-    simFD_index <- simFD_div[, index_name]
+  # If no variable lines remain, we move on to the next layer
+  if (ncol(traits_layer) == 0) next  
+  
+  # Correct formatting of biomass_layer with depth layer in rownames
+  # Converts biomass data to matrix, which is required by FD::dbFD()
+  biomass_layer <- matrix(as.numeric(depth_fish_biomass[layer, species_in_layer, drop = FALSE]), 
+                          nrow = 1, dimnames = list(layer, species_in_layer))
+  
+  # Calculation of observed indices with FD::dbFD
+  dbFD_result <- FD::dbFD(x = traits_layer, w.abun = TRUE, m = 4, a = biomass_layer, messages=F,
+                          corr = corr_method)
+  
+  # Storage of observed values
+  dbFD_result_obs[layer, "FRic"] <- dbFD_result$FRic
+  dbFD_result_obs[layer, "FDis"] <- dbFD_result$FDis
+  dbFD_result_obs[layer, "FEve"] <- dbFD_result$FEve
+  dbFD_result_obs[layer, "FDiv"] <- dbFD_result$FDiv  
+  
+  # Simulations for each layer
+  for (sim in 1:n_simulations) {
+    randomized_traits <- randomize_traits(traits_layer)
     
-    # Ensure that simFD_index has the same length as the number of rows in depth_fish_biomass
-    if (length(simFD_index) == nrow(depth_fish_biomass)) {
-      resultsRandomFD[[index_name]][, rep] <- simFD_index
-    } else {
-      stop(
-        paste(
-          "The length of",
-          index_name,
-          "does not match the number of rows in depth_fish_biomass"
-        )
-      )
-    }
-  }
+    dbFD_sim_result <- FD::dbFD(x = randomized_traits, w.abun = TRUE, m = 4, a = biomass_layer, messages=F,
+                                corr = corr_method)
+    
+    # Storage of simulated values
+    dbFD_result_sim[layer, sim, "FRic"] <- dbFD_sim_result$FRic
+    dbFD_result_sim[layer, sim, "FDis"] <- dbFD_sim_result$FDis
+    dbFD_result_sim[layer, sim, "FEve"] <- dbFD_sim_result$FEve
+    dbFD_result_sim[layer, sim, "FDiv"] <- dbFD_sim_result$FDiv 
+  }  
 }
 
-# Initialize dataframes to store mean, standard deviation, effect size, and standardized effect size
-meanNullFD <- data.frame(matrix(NA, nrow = nrow(depth_fish_biomass), ncol = length(indices_names)))
-sdNullFD <- data.frame(matrix(NA, nrow = nrow(depth_fish_biomass), ncol = length(indices_names)))
-ES_FD <- data.frame(matrix(NA, nrow = nrow(depth_fish_biomass), ncol = length(indices_names)))
-SES_FD <- data.frame(matrix(NA, nrow = nrow(depth_fish_biomass), ncol = length(indices_names)))
+# Calculation of the SES (Standardized Effect Size) ----
+SES_results <- data.frame(depth_layer = rownames(dbFD_result_obs))
 
-# Set column names for the dataframes
-colnames(meanNullFD) <- indices_names
-colnames(sdNullFD) <- indices_names
-colnames(ES_FD) <- indices_names
-colnames(SES_FD) <- indices_names
-
-# Dataframe to store SES values for testing normality
-SES_values_reps <- data.frame()
-
-# Calculate statistics and SES for each index and store SES in both dataframes
-for (index_name in indices_names) {
-  # Calculate mean and standard deviation of null model FD values for each index
-  meanNullFD[, index_name] <- rowMeans(resultsRandomFD[[index_name]], na.rm = TRUE)
-  sdNullFD[, index_name] <- apply(resultsRandomFD[[index_name]], 1, sd, na.rm = TRUE)
-  
-  # Calculate effect size and standardized effect size for each index
-  ES_FD[, index_name] <- obsFD_div[, index_name] - meanNullFD[, index_name]
-  SES_FD[, index_name] <- ES_FD[, index_name] / sdNullFD[, index_name]
-  
-  # Calculate SES for each repetition and add to SES_values_reps dataframe
-  for (rep in 1:nb_rep) {
-    SES_repetition <- (resultsRandomFD[[index_name]][, rep] - meanNullFD[, index_name]) / sdNullFD[, index_name]
-    SES_values_reps <- rbind(
-      SES_values_reps,
-      data.frame(
-        depth_layer = rownames(depth_fish_biomass),
-        SES = SES_repetition,
-        index = index_name,
-        repetition = paste0("Rep_", rep)
-      )
-    )
-  }
+for (index in indices) {
+  meanNullFD <- rowMeans(dbFD_result_sim[, , index], na.rm = TRUE)
+  sdNullFD <- apply(dbFD_result_sim[, , index], 1, sd, na.rm = TRUE)
+  SES_results[[index]] <- (dbFD_result_obs[, index] - meanNullFD) / sdNullFD
 }
-
-# Combine all results into a single dataframe
-results_df <- cbind(
-  obsFD_div,
-  meanNullFD = meanNullFD,
-  sdNullFD = sdNullFD,
-  ES_FD = ES_FD,
-  SES_FD = SES_FD
-)
-
-# Add row names
-rownames(results_df) <- rownames(depth_fish_biomass)
 
 # Plot ----
-# Output the results dataframe
-results_df_plot <- results_df %>%
-  tibble::rownames_to_column(var = "depth_layer") %>%
-  tidyr::pivot_longer(!depth_layer,
-                      values_to = "values",
-                      names_to = "indice") %>%
-  mutate(indice = stringr::str_replace(indice, "^SES_", "")) %>%
-  filter(indice %in% c("FD.fric",
-                       "FD.fdis",
-                       "FD.feve",
-                       "FD.fdiv"))
+results_df <- tidyr::pivot_longer(
+  SES_results,
+  cols = -depth_layer,
+  names_to = "index",
+  values_to = "SES_FD"
+)
 
-
-results_df_plot$depth_layer <- factor(
-  results_df_plot$depth_layer,
+results_df$depth_layer <- factor(
+  results_df$depth_layer,
   levels = c(
     "Epipelagic",
     "Upper mesopelagic",
@@ -979,12 +947,13 @@ results_df_plot$depth_layer <- factor(
     "Bathypelagic"
   )
 )
-results_df_plot$indice <- factor(
-  results_df_plot$indice,
-  levels = c("FD.fric",
-             "FD.fdis",
-             "FD.fdiv",
-             "FD.feve"),
+
+results_df$index <- factor(
+  results_df$index,
+  levels = c("FRic",
+             "FDis",
+             "FDiv",
+             "FEve"),
   labels = c(
     "Functional richness",
     "Functional dispersion",
@@ -993,14 +962,12 @@ results_df_plot$indice <- factor(
   )
 )
 
-ggplot(results_df_plot, aes(x = depth_layer, y = values, fill = depth_layer)) +
-  facet_wrap(~indice) +
-  geom_point(size = 3, aes(col=depth_layer)) +
+ggplot(results_df, aes(x = depth_layer, y = SES_FD, color = depth_layer)) +
+  geom_point(size = 3) +
+  facet_wrap(~index) +
+  geom_hline(yintercept = c(1.96, -1.96), linetype = "dashed", color = "gray40", size=0.8) +
   scale_color_manual(values = c("#FEA520", "#D62246", "#6255B4", "#3C685A")) +
-  scale_fill_manual(values = c("#FEA520", "#D62246", "#6255B4", "#3C685A")) +
-  labs(
-    x = "",
-    y = "Standard Effect Size (SES)") +
+  labs(x = "", y = "Standard Effect Size (SES)") +
   theme_light() +
   theme(axis.text.x = element_blank(),
         strip.text.x = element_text(size = 14, color = "black"),
@@ -1009,7 +976,7 @@ ggplot(results_df_plot, aes(x = depth_layer, y = values, fill = depth_layer)) +
         axis.text = element_text(size = 13)) +
   guides(col="none", fill="none")
 
-ggsave("SES_indices_1000_depth_layer.png", path = "figures", dpi = 700, height = 6, width = 8)
+ggsave("SES_dbFD.png", path = "figures", dpi = 700, height = 5, width = 7)
 
 ```
 
@@ -1028,19 +995,19 @@ ggsave("SES_indices_1000_depth_layer.png", path = "figures", dpi = 700, height =
 #| fig-height: 8
 
 # normality and symetry tests ----
-test_norm  <- SES_values_reps %>%
-  tibble::remove_rownames() %>%
-  filter(index %in% c("fdis", "fdiv", "feve", "fric"))
-
-# Compute skewness and Lilliefors tests to check normaltiy and symetry 
-stat_indices <- test_norm %>% 
-  group_by(index, depth_layer) %>% 
-  summarise(
-    skewness = round(e1071::skewness(SES),2),
-    Lilliefors_pvalue = round(nortest::lillie.test(SES)$p.value,2)
-  )
-
-htmltools::tagList(DT::datatable(stat_indices))
+# test_norm  <- SES_values_reps %>%
+#   tibble::remove_rownames() %>%
+#   filter(index %in% c("fdis", "fdiv", "feve", "fric"))
+# 
+# # Compute skewness and Lilliefors tests to check normaltiy and symetry 
+# stat_indices <- test_norm %>% 
+#   group_by(index, depth_layer) %>% 
+#   summarise(
+#     skewness = round(e1071::skewness(SES),2),
+#     Lilliefors_pvalue = round(nortest::lillie.test(SES)$p.value,2)
+#   )
+# 
+# htmltools::tagList(DT::datatable(stat_indices))
 ```
 
 - the red dashed line = normal distribution
@@ -1052,24 +1019,24 @@ htmltools::tagList(DT::datatable(stat_indices))
 #| fig-width: 10
 #| fig-height: 8
 
-test_norm$depth_layer <- factor(
-  test_norm$depth_layer,
-  levels = c(
-    "Epipelagic",
-    "Upper mesopelagic",
-    "Lower mesopelagic",
-    "Bathypelagic"
-  )
-)
-
-# Density plot with normal density overlay
-ggpubr::ggdensity(test_norm, x = "SES", fill = "gray", col = "white") +
-  facet_grid(depth_layer~index, scales = "free") +
-  ggpubr::stat_overlay_normal_density(color = "red", linetype = "dashed", size = 1) +  
-  theme_light() +
-  labs(title = "Distribution of values of the random communites in compariaosn to the normal distribution",
-       x = "Values", 
-       y = "Density")
+# test_norm$depth_layer <- factor(
+#   test_norm$depth_layer,
+#   levels = c(
+#     "Epipelagic",
+#     "Upper mesopelagic",
+#     "Lower mesopelagic",
+#     "Bathypelagic"
+#   )
+# )
+# 
+# # Density plot with normal density overlay
+# ggpubr::ggdensity(test_norm, x = "SES", fill = "gray", col = "white") +
+#   facet_grid(depth_layer~index, scales = "free") +
+#   ggpubr::stat_overlay_normal_density(color = "red", linetype = "dashed", size = 1) +  
+#   theme_light() +
+#   labs(title = "Distribution of values of the random communites in compariaosn to the normal distribution",
+#        x = "Values", 
+#        y = "Density")
 ```
 
 
@@ -1309,21 +1276,36 @@ sum_boot_moment_pca <- trait_summarise_boot_moments(
   tibble::column_to_rownames(var = "depth_layer")
 
 res.pca <- FactoMineR::PCA(sum_boot_moment_pca, graph = FALSE)
+  
+pca_var <- factoextra::fviz_pca_var(
+  res.pca,
+  repel = TRUE,
+  pointsize = 2,
+  arrowsize = 0.1,
+  label = "var",
+  title = "",
+  col.circle = "gray80",
+  col.var = "gray30",
+  labelsize=3.5,
+  alpha.arrow=0.5
+) +
+  labs(x = "", y = "") +
+  theme_light() +
+  theme(
+    aspect.ratio = 1,
+    panel.grid.minor =  element_blank(),
+    panel.grid.major = element_blank())
+ 
+pca_ind <- factoextra::fviz_pca_ind(res.pca, label="none", title="") +
+  theme_light() +
+  labs(x="", y="")+
+  theme(aspect.ratio = 1,
+        panel.grid.minor =  element_blank(),
+        panel.grid.major = element_blank())
 
-res.pca <- FactoMineR::PCA(sum_boot_moment_pca, graph = FALSE)
-
-factoextra::fviz_pca_biplot(res.pca, repel = TRUE,
-                            pointsize = 2,
-                            arrowsize = 0.2,
-                            label="var",
-                            title = "", 
-                            col.var = "gray50")+
-  theme_light()+
-  theme(panel.grid.minor =  element_blank(),
-        panel.grid.major = element_blank())+
-  labs(x="Dimension 1 (50.7%)", y= "Dimension 2 (39.0%)")
-
-ggsave("PCA_CWM.png", path = "figures", dpi = 700, height = 5, width = 8)
+combined_plot <- gridExtra::grid.arrange(pca_var, pca_ind, ncol = 2)
+  
+ggsave("PCA_CWM_2.png", plot = combined_plot, path = "figures", dpi = 700, height = 5, width = 8)
 
 ```
 
@@ -1607,767 +1589,5 @@ ggpubr::ggarrange(
 ) 
 
 ggsave("functional_space_PC3_4.png", path = "figures", dpi = 800, height = 8, width = 10)
-```
-
-```{r}
-#| echo: true
-#| label: ses_mfd
-#| warning: false
-#| message: false
-#| fig-width: 10
-#| fig-height: 8
-
-# # by depth
-# station_sp <-
-#   rbind(data_biomass_2002_2019, data_biomass_2021_2022) %>%
-#   as.data.frame() %>%
-#   left_join(metadata) %>%
-#   select(species, biomass_sp, volume_filtered, station) %>%
-#   # Divide biomass by the volume filtered at each trawl (g.m3)
-#   mutate(biomass_cpu = (biomass_sp / volume_filtered) * 1000) %>%
-#   select(species, biomass_cpu, station) %>%
-#   replace(is.na(.), 0) %>%
-#   group_by(species, station) %>%
-#   mutate(biomass = sum(biomass_cpu)) %>%
-#   select(-biomass_cpu) %>%
-#   distinct() %>%
-#   tidyr::pivot_wider(names_from = species, values_from = biomass) %>%
-#   replace(is.na(.), 0) %>%
-#   arrange(station) %>%
-#   filter(!station %in% c("H0411", "L0731", "L0736")) %>%
-#   tibble::column_to_rownames(var = "station") %>%
-#   select(order(colnames(.))) %>%
-#   as.matrix()
-# 
-# # if we want only presence-absence
-# #station_sp <- replace(station_sp, station_sp > 0, 1)
-# 
-# # Calculate functional diversity for the observed data ----
-# obsFD <- mFD::alpha.fd.multidim(
-#   sp_faxes_coord = sp_faxes_coord_fish[, c("PC1", "PC2", "PC3", "PC4")],
-#   asb_sp_w = station_sp,
-#   scaling = TRUE,
-#   check_input = TRUE,
-#   details_returned = F
-# )
-# 
-# obsFD_div <- obsFD$functional_diversity_indices
-# 
-# # Null model ----
-# # Define the number of replications
-# nb_rep <- 10
-# 
-# # Initialize a list to store results of random functional diversity calculations for each index
-# indices_names <- colnames(obsFD_div)
-# resultsRandomFD <- list()
-# 
-# for (index_name in indices_names) {
-#   resultsRandomFD[[index_name]] <- matrix(
-#     NA,
-#     nrow = nrow(station_sp),
-#     ncol = nb_rep,
-#     dimnames = list(rownames(station_sp), paste0("Sim.", 1:nb_rep))
-#   )
-# }
-# 
-# # Perform randomization and calculate functional diversity for each replication
-# for (rep in 1:nb_rep) {
-#   randomize_mx <- picante::randomizeMatrix(samp = station_sp,
-#                                            null.model = "frequency",
-#                                            iterations = 1)
-#   
-#   simFD_cal <- mFD::alpha.fd.multidim(
-#     sp_faxes_coord = sp_faxes_coord_fish[, c("PC1", "PC2", "PC3", "PC4")],
-#     asb_sp_w = randomize_mx,
-#     scaling = TRUE,
-#     check_input = TRUE,
-#     details_returned = F
-#   )
-#   
-#   simFD_div <- simFD_cal$functional_diversity_indices
-#   
-#   for (index_name in indices_names) {
-#     simFD_index <- simFD_div[, index_name]
-#     
-#     # Ensure that simFD_index has the same length as the number of rows in station_sp
-#     if (length(simFD_index) == nrow(station_sp)) {
-#       resultsRandomFD[[index_name]][, rep] <- simFD_index
-#     } else {
-#       stop(
-#         paste(
-#           "The length of",
-#           index_name,
-#           "does not match the number of rows in station_sp"
-#         )
-#       )
-#     }
-#   }
-# }
-# 
-# # Initialize dataframes to store mean, standard deviation, effect size, and standardized effect size
-# meanNullFD <-
-#   data.frame(matrix(
-#     NA,
-#     nrow = nrow(station_sp),
-#     ncol = length(indices_names)
-#   ))
-# sdNullFD <-
-#   data.frame(matrix(
-#     NA,
-#     nrow = nrow(station_sp),
-#     ncol = length(indices_names)
-#   ))
-# ES_FD <-
-#   data.frame(matrix(
-#     NA,
-#     nrow = nrow(station_sp),
-#     ncol = length(indices_names)
-#   ))
-# SES_FD <-
-#   data.frame(matrix(
-#     NA,
-#     nrow = nrow(station_sp),
-#     ncol = length(indices_names)
-#   ))
-# 
-# # Set column names for the dataframes
-# colnames(meanNullFD) <- indices_names
-# colnames(sdNullFD) <- indices_names
-# colnames(ES_FD) <- indices_names
-# colnames(SES_FD) <- indices_names
-# 
-# # Calculate statistics for each index
-# for (index_name in indices_names) {
-#   # Calculate mean and standard deviation of null model FD values for each index
-#   meanNullFD[, index_name] <-
-#     rowMeans(resultsRandomFD[[index_name]], na.rm = TRUE)
-#   sdNullFD[, index_name] <-
-#     apply(resultsRandomFD[[index_name]], 1, sd, na.rm = TRUE)
-#   
-#   # Calculate effect size and standardized effect size for each index
-#   ES_FD[, index_name] <-
-#     obsFD_div[, index_name] - meanNullFD[, index_name]
-#   SES_FD[, index_name] <-
-#     ES_FD[, index_name] / sdNullFD[, index_name]
-# }
-# 
-# # Combine all results into a single dataframe
-# results_df <- cbind(
-#   obsFD_div,
-#   meanNullFD = meanNullFD,
-#   sdNullFD = sdNullFD,
-#   ES_FD = ES_FD,
-#   SES_FD = SES_FD
-# )
-# 
-# # Add row names
-# rownames(results_df) <- rownames(station_sp)
-# 
-# # Plot  ----
-# # Output the results dataframe
-# results_df_plot <- results_df %>%
-#   tibble::rownames_to_column(var = "station") %>%
-#   inner_join(metadata %>% select(station, depth), by = "station") %>%
-#   mutate(
-#     depth_layer = case_when(
-#       between(depth, 0, 174) ~ "Epipelagic",
-#       between(depth, 175, 699) ~ "Upper mesopelagic",
-#       between(depth, 700, 999) ~ "Lower mesopelagic",
-#       between(depth, 1000, 2000) ~ "Bathypelagic"
-#     )
-#   ) %>%
-#   select(-station) %>%
-#   tidyr::pivot_longer(!c(depth, depth_layer),
-#                       values_to = "values",
-#                       names_to = "indice") %>%
-#   mutate(indice = stringr::str_replace(indice, "^SES_", "")) %>%
-#   filter(indice %in% c("FD.fric",
-#                        "FD.fdis",
-#                        "FD.feve",
-#                        "FD.fdiv"))
-# 
-# results_df_plot$depth_layer <- factor(
-#   results_df_plot$depth_layer,
-#   levels = c(
-#     "Epipelagic",
-#     "Upper mesopelagic",
-#     "Lower mesopelagic",
-#     "Bathypelagic"
-#   )
-# )
-# results_df_plot$indice <- factor(
-#   results_df_plot$indice,
-#   levels = c("FD.fric",
-#              "FD.fdis",
-#              "FD.fdiv",
-#              "FD.feve"),
-#   labels = c(
-#     "Functional richness",
-#     "Functional dispersion",
-#     "Functional divergence",
-#     "Functional evenness"
-#   )
-# )
-# 
-# ggplot(results_df_plot, aes(x = depth_layer, y = values, fill = depth_layer)) +
-#   facet_wrap(~indice, scales = "free") +
-#   geom_point(alpha = 0.5, size = 1, position = position_jitter(width = 0.2), aes(col=depth_layer)) +
-#   geom_boxplot(alpha = 0.1, outlier.shape = NA, width = 0.5, aes(col=depth_layer, fill=depth_layer))+
-#   scale_color_manual(values = c("#FEA520", "#D62246", "#6255B4", "#3C685A")) +
-#   scale_fill_manual(values = c("#FEA520", "#D62246", "#6255B4", "#3C685A")) +
-#   labs(
-#     x = "",
-#     y = "Standard Effect Size (SES)") +
-#   theme_light() +
-#   theme(axis.text.x = element_blank(),
-#         strip.text.x = element_text(size = 14, color = "black"),
-#         strip.background = element_rect(fill = "white"),
-#         axis.title = element_text(size = 13),
-#         axis.text = element_text(size = 13))+
-#   geom_hline(yintercept = 1.96, linetype = "dashed", color = "gray50", linewidth = 0.8)+
-#   geom_hline(yintercept = -1.96, linetype = "dashed", color = "gray50", linewidth = 0.8)+
-#   guides(col="none", fill="none")
-
-#ggsave("SES_indices_1000.png", path = "figures", dpi = 700, height = 7, width = 9)
-
-```
-
-
-# 7. Nouveaux tests modèles nuls 
-## 7.1. Model "richness" by depth layer 
-
-Model of randomization = "richness" & by depth layer la biomasse des espèces est donc randomisée par couche de profondeur (seules les espèces présentes dans la couche de profondeur).
-Dans ce cas, je n'obtiens pas de valeurs de SES pour la richesse fonctionelle car cet indice ne prend pas en compte la biomasse des espèces, seulement leur présence et donc j'obtiens les mêmes valeurs de Functional richness pour les valeurs observées et les valeurs simulées donc les valeurs de SES sont toujours = 0 (que les valeurs de biomasses soient randomisées ou pas ça ne change rien)
-```{r}
-#| echo: true
-#| label: ses_depth_layer_richness_model
-#| warning: false
-#| message: false
-#| fig-width: 6
-#| fig-height: 6
-
-# Calculate functional diversity for the observed data ----
-obsFD <- mFD::alpha.fd.multidim(
-  sp_faxes_coord = sp_faxes_coord_fish[, c("PC1", "PC2", "PC3", "PC4")],
-  asb_sp_w = depth_fish_biomass,
-  ind_vect = c("fdis", "feve", "fdiv"),
-  scaling = TRUE,
-  check_input = TRUE,
-  details_returned = FALSE
-)
-
-obsFD_div <- obsFD$functional_diversity_indices
-
-# Null model ----
-# Define the number of replications
-nb_rep <- 10
-null_model_used <- "richness"
-
-# Initialize a list to store results of random functional diversity calculations for each index
-indices_names <- colnames(obsFD_div)
-resultsRandomFD <- list()
-randomized_matrices <- list()  # List to store randomized matrices
-
-for (index_name in indices_names) {
-  resultsRandomFD[[index_name]] <- matrix(
-    NA,
-    nrow = nrow(depth_fish_biomass),
-    ncol = nb_rep,
-    dimnames = list(rownames(depth_fish_biomass), paste0("Sim.", 1:nb_rep))
-  )
-}
-
-# Perform randomization and calculate functional diversity for each depth layer
-for (depth_layer in unique(rownames(depth_fish_biomass))) {
-  # Subset biomass matrix for the current depth layer
-  sub_biomass <- depth_fish_biomass[rownames(depth_fish_biomass) == depth_layer, , drop = FALSE]
-  
-  # Filter species with biomass > 0
-  sub_biomass <- sub_biomass[, colSums(sub_biomass) > 0, drop = FALSE]
-  
-  for (rep in 1:nb_rep) {
-    randomize_mx <- picante::randomizeMatrix(
-      samp = sub_biomass,
-      null.model = null_model_used,
-      iterations = 1
-    )
-    
-    # Store the randomized matrix
-    randomized_matrices[[paste0(depth_layer, "_Rep_", rep)]] <- randomize_mx
-    
-    simFD_cal <- mFD::alpha.fd.multidim(
-      sp_faxes_coord = sp_faxes_coord_fish[, c("PC1", "PC2", "PC3", "PC4")],
-      asb_sp_w = randomize_mx,
-      ind_vect = c("fdis", "feve", "fdiv"),
-      scaling = TRUE,
-      check_input = TRUE,
-      details_returned = FALSE
-    )
-    
-    simFD_div <- simFD_cal$functional_diversity_indices
-    
-    for (index_name in indices_names) {
-      simFD_index <- simFD_div[, index_name]
-      
-      if (length(simFD_index) == nrow(sub_biomass)) {
-        resultsRandomFD[[index_name]][rownames(sub_biomass), rep] <- simFD_index
-      } else {
-        stop(
-          paste(
-            "The length of",
-            index_name,
-            "does not match the number of rows in sub_biomass for depth layer", depth_layer
-          )
-        )
-      }
-    }
-  }
-}
-
-# Initialize dataframes to store mean, standard deviation, effect size, and standardized effect size
-meanNullFD <- data.frame(matrix(NA, nrow = nrow(depth_fish_biomass), ncol = length(indices_names)))
-sdNullFD <- data.frame(matrix(NA, nrow = nrow(depth_fish_biomass), ncol = length(indices_names)))
-ES_FD <- data.frame(matrix(NA, nrow = nrow(depth_fish_biomass), ncol = length(indices_names)))
-SES_FD <- data.frame(matrix(NA, nrow = nrow(depth_fish_biomass), ncol = length(indices_names)))
-
-# Set column names for the dataframes
-colnames(meanNullFD) <- indices_names
-colnames(sdNullFD) <- indices_names
-colnames(ES_FD) <- indices_names
-colnames(SES_FD) <- indices_names
-
-# Dataframe to store SES values for testing normality
-SES_values_reps <- data.frame()
-
-# Calculate statistics and SES for each index and store SES in both dataframes
-for (index_name in indices_names) {
-  # Calculate mean and standard deviation of null model FD values for each index
-  meanNullFD[, index_name] <- rowMeans(resultsRandomFD[[index_name]], na.rm = TRUE)
-  sdNullFD[, index_name] <- apply(resultsRandomFD[[index_name]], 1, sd, na.rm = TRUE)
-  
-  # Calculate effect size and standardized effect size for each index
-  ES_FD[, index_name] <- obsFD_div[, index_name] - meanNullFD[, index_name]
-  SES_FD[, index_name] <- ES_FD[, index_name] / sdNullFD[, index_name]
-  
-  # Calculate SES for each repetition and add to SES_values_reps dataframe
-  for (rep in 1:nb_rep) {
-    SES_repetition <- (resultsRandomFD[[index_name]][, rep] - meanNullFD[, index_name]) / sdNullFD[, index_name]
-    SES_values_reps <- rbind(
-      SES_values_reps,
-      data.frame(
-        depth_layer = rownames(depth_fish_biomass),
-        SES = SES_repetition,
-        index = index_name,
-        repetition = paste0("Rep_", rep)
-      )
-    )
-  }
-}
-
-# Combine all results into a single dataframe
-results_df <- cbind(
-  obsFD_div,
-  meanNullFD = meanNullFD,
-  sdNullFD = sdNullFD,
-  ES_FD = ES_FD,
-  SES_FD = SES_FD
-)
-
-# Add row names
-rownames(results_df) <- rownames(depth_fish_biomass)
-
-# Plot ----
-# Output the results dataframe
-results_df_plot <- results_df %>%
-  tibble::rownames_to_column(var = "depth_layer") %>%
-  tidyr::pivot_longer(!depth_layer,
-                      values_to = "values",
-                      names_to = "indice") %>%
-  filter(indice %in% c("SES_FD.fdis",
-                       "SES_FD.fdiv",
-                       "SES_FD.feve"))
-
-
-results_df_plot$depth_layer <- factor(
-  results_df_plot$depth_layer,
-  levels = c(
-    "Epipelagic",
-    "Upper mesopelagic",
-    "Lower mesopelagic",
-    "Bathypelagic"
-  )
-)
-results_df_plot$indice <- factor(
-  results_df_plot$indice,
-  levels = c("SES_FD.fdis",
-             "SES_FD.fdiv",
-             "SES_FD.feve"),
-  labels = c(
-    "Functional dispersion",
-    "Functional divergence",
-    "Functional evenness"
-  )
-)
-
-ggplot(results_df_plot, aes(x = depth_layer, y = values, fill = depth_layer)) +
-  facet_wrap(~indice, ncol=2) +
-  geom_point(size = 3, aes(col = depth_layer)) +
-  scale_color_manual(values = c("#FEA520", "#D62246", "#6255B4", "#3C685A")) +
-  scale_fill_manual(values = c("#FEA520", "#D62246", "#6255B4", "#3C685A")) +
-  labs(
-    x = "",
-    y = "Standard Effect Size (SES)",
-    title = paste("nb_rep =", nb_rep, "| Model =", null_model_used)
-  ) +
-  theme_light() +
-  ylim(c(-3,3))+
-  theme(
-    axis.text.x = element_blank(),
-    strip.text.x = element_text(size = 14, color = "black"),
-    strip.background = element_rect(fill = "white"),
-    axis.title = element_text(size = 13),
-    axis.text = element_text(size = 13)
-  ) +
-  guides(col = "none", fill = "none")
-
-ggsave("SES_by_depth_layer_richness2.png", path = "figures", dpi = 700, height = 6, width = 8)
-```
-
-### 7.1.1. tests normalité et symétrie
-```{r}
-#| echo: true
-#| label: test_norm_2
-#| warning: false
-#| message: false
-
-# normality and symetry tests ----
-test_norm  <- SES_values_reps %>%
-  tibble::remove_rownames() %>%
-  filter(index %in% c("fdis", "fdiv", "feve"))
-
-# Compute skewness and Lilliefors tests to check normality and symmetry 
-stat_indices <- test_norm %>% 
-  group_by(index, depth_layer) %>% 
-  summarise(
-    skewness = round(e1071::skewness(SES),2),
-    Lilliefors_pvalue = round(nortest::lillie.test(SES)$p.value,2)
-  )
-
-htmltools::tagList(DT::datatable(stat_indices))
-```
-
-## 7.2. Model "frequency" all the community
-- est-ce que chaque assemblage est + ou - riche fonctionnellment par rapport à l'ensemble des espèces potentiellement présentes au sein de la communauté (donc matrice randomisée sur l'ensemble des couches)
-
-```{r}
-#| echo: true
-#| label: ses_community_frequency
-#| warning: false
-#| message: false
-#| fig-width: 6
-#| fig-height: 6
-
-# Calculate functional diversity for the observed data ----
-obsFD <- mFD::alpha.fd.multidim(
-  sp_faxes_coord = sp_faxes_coord_fish[, c("PC1", "PC2", "PC3", "PC4")],
-  asb_sp_w = depth_fish_biomass,
-  ind_vect = c("fric"),
-  scaling = TRUE,
-  check_input = TRUE,
-  details_returned = F
-)
-
-obsFD_div <- obsFD$functional_diversity_indices
-
-# Null model ----
-# Define the number of replications
-nb_rep <- 10
-
-# Initialize a list to store results of random functional diversity calculations for each index
-indices_names <- colnames(obsFD_div)
-resultsRandomFD <- list()
-
-for (index_name in indices_names) {
-  resultsRandomFD[[index_name]] <- matrix(
-    NA,
-    nrow = nrow(depth_fish_biomass),
-    ncol = nb_rep,
-    dimnames = list(rownames(depth_fish_biomass), paste0("Sim.", 1:nb_rep))
-  )
-}
-
-# Perform randomization and calculate functional diversity for each replication
-for (rep in 1:nb_rep) {
-  randomize_mx <- picante::randomizeMatrix(samp = depth_fish_biomass,
-                                           null.model = "frequency",
-                                           iterations = 1)
-  
-  simFD_cal <- mFD::alpha.fd.multidim(
-    sp_faxes_coord = sp_faxes_coord_fish[, c("PC1", "PC2", "PC3", "PC4")],
-    asb_sp_w = randomize_mx,
-    ind_vect = c("fric"),
-    scaling = TRUE,
-    check_input = TRUE,
-    details_returned = F
-  )
-  
-  simFD_div <- simFD_cal$functional_diversity_indices
-  
-  for (index_name in indices_names) {
-    simFD_index <- simFD_div[, index_name]
-    
-    # Ensure that simFD_index has the same length as the number of rows in depth_fish_biomass
-    if (length(simFD_index) == nrow(depth_fish_biomass)) {
-      resultsRandomFD[[index_name]][, rep] <- simFD_index
-    } else {
-      stop(
-        paste(
-          "The length of",
-          index_name,
-          "does not match the number of rows in depth_fish_biomass"
-        )
-      )
-    }
-  }
-}
-
-# Initialize dataframes to store mean, standard deviation, effect size, and standardized effect size
-meanNullFD <- data.frame(matrix(NA, nrow = nrow(depth_fish_biomass), ncol = length(indices_names)))
-sdNullFD <- data.frame(matrix(NA, nrow = nrow(depth_fish_biomass), ncol = length(indices_names)))
-ES_FD <- data.frame(matrix(NA, nrow = nrow(depth_fish_biomass), ncol = length(indices_names)))
-SES_FD <- data.frame(matrix(NA, nrow = nrow(depth_fish_biomass), ncol = length(indices_names)))
-
-# Set column names for the dataframes
-colnames(meanNullFD) <- indices_names
-colnames(sdNullFD) <- indices_names
-colnames(ES_FD) <- indices_names
-colnames(SES_FD) <- indices_names
-
-# Dataframe to store SES values for testing normality
-SES_values_reps <- data.frame()
-
-# Calculate statistics and SES for each index and store SES in both dataframes
-for (index_name in indices_names) {
-  # Calculate mean and standard deviation of null model FD values for each index
-  meanNullFD[, index_name] <- rowMeans(resultsRandomFD[[index_name]], na.rm = TRUE)
-  sdNullFD[, index_name] <- apply(resultsRandomFD[[index_name]], 1, sd, na.rm = TRUE)
-  
-  # Calculate effect size and standardized effect size for each index
-  ES_FD[, index_name] <- obsFD_div[, index_name] - meanNullFD[, index_name]
-  SES_FD[, index_name] <- ES_FD[, index_name] / sdNullFD[, index_name]
-  
-  # Calculate SES for each repetition and add to SES_values_reps dataframe
-  for (rep in 1:nb_rep) {
-    SES_repetition <- (resultsRandomFD[[index_name]][, rep] - meanNullFD[, index_name]) / sdNullFD[, index_name]
-    SES_values_reps <- rbind(
-      SES_values_reps,
-      data.frame(
-        depth_layer = rownames(depth_fish_biomass),
-        SES = SES_repetition,
-        index = index_name,
-        repetition = paste0("Rep_", rep)
-      )
-    )
-  }
-}
-
-# Combine all results into a single dataframe
-results_df <- cbind(
-  obsFD_div,
-  meanNullFD = meanNullFD,
-  sdNullFD = sdNullFD,
-  ES_FD = ES_FD,
-  SES_FD = SES_FD
-)
-
-# Add row names
-rownames(results_df) <- rownames(depth_fish_biomass)
-
-# Plot ----
-# Output the results dataframe
-results_df_plot <- results_df %>%
-  tibble::rownames_to_column(var = "depth_layer") %>%
-  tidyr::pivot_longer(!depth_layer,
-                      values_to = "values",
-                      names_to = "indice") %>%
-  filter(indice %in% c("SES_FD.fric"))
-
-
-results_df_plot$depth_layer <- factor(
-  results_df_plot$depth_layer,
-  levels = c(
-    "Epipelagic",
-    "Upper mesopelagic",
-    "Lower mesopelagic",
-    "Bathypelagic"
-  )
-)
-
-results_df_plot$indice <- factor(
-  results_df_plot$indice,
-  levels = c("SES_FD.fric"),
-  labels = c(
-    "Functional richness"
-  )
-)
-
-ggplot(results_df_plot, aes(x = depth_layer, y = values, fill = depth_layer)) +
-  facet_wrap(~indice) +
-  geom_point(size = 3, aes(col=depth_layer)) +
-  scale_color_manual(values = c("#FEA520", "#D62246", "#6255B4", "#3C685A")) +
-  scale_fill_manual(values = c("#FEA520", "#D62246", "#6255B4", "#3C685A")) +
-  labs(
-    x = "",
-    y = "Standard Effect Size (SES)") +
-  theme_light() +
-  theme(axis.text.x = element_blank(),
-        strip.text.x = element_text(size = 14, color = "black"),
-        strip.background = element_rect(fill = "white"),
-        axis.title = element_text(size = 13),
-        axis.text = element_text(size = 13)) +
-  guides(col="none", fill="none")
-
-ggsave("SES_frequency_community.png", path = "figures", dpi = 700, height = 3, width = 4)
-```
-
-
-### 7.2.1. tests normalité et symétrie
-```{r}
-#| echo: true
-#| label: test_norm_3
-#| warning: false
-#| message: false
-
-# normality and symmetry tests ----
-test_norm  <- SES_values_reps %>%
-  tibble::remove_rownames() %>%
-  filter(index %in% c("fric"))
-
-# Compute skewness and Lilliefors tests to check normality and symmetry 
-stat_indices <- test_norm %>% 
-  summarise(
-    skewness = round(e1071::skewness(SES),2),
-    Lilliefors_pvalue = round(nortest::lillie.test(SES)$p.value,2)
-  )
-
-htmltools::tagList(DT::datatable(stat_indices))
-```
-
-# 8. dbFD package 
-
-```{r}
-#| echo: true
-#| label: ses_dbFD
-#| warning: false
-#| message: false
-#| fig-width: 9
-#| fig-height: 6
-
-# Load data
-depth_fish_biomass <- read.csv(here::here("data", "depth_fish_biomass.csv"), row.names = 1, sep = ";", dec = ".")
-fish_traits <- read.csv(here::here("data", "fish_traits.csv"), row.names = 1, sep = ";", dec = ".")
-
-# Convert character traits to factor
-fish_traits <- fish_traits %>% mutate(across(where(is.character), as.factor))
-
-# Function to randomize traits while preserving factor levels
-randomize_traits <- function(traits_mat) {
-  randomized_mat <- traits_mat
-  for (trait in colnames(traits_mat)) {
-    if (is.factor(traits_mat[[trait]])) {
-      randomized_mat[[trait]] <- factor(sample(traits_mat[[trait]], replace = FALSE), levels = levels(traits_mat[[trait]]))
-    } else {
-      randomized_mat[[trait]] <- sample(traits_mat[[trait]], replace = FALSE)
-    }
-  }
-  return(randomized_mat)
-}
-
-# Number of simulations
-n_simulations <- 99
-
-# Depth layers
-depth_layers <- rownames(depth_fish_biomass)
-
-# Liste des indices à calculer
-indices <- c("FRic", "FDis", "RaoQ", "FEve", "FDiv") 
-
-# Matrices pour stocker les résultats observés et simulés
-dbFD_result_obs <- matrix(NA, nrow = length(depth_layers), ncol = length(indices), 
-                          dimnames = list(depth_layers, indices))
-
-dbFD_result_sim <- array(NA, dim = c(length(depth_layers), n_simulations, length(indices)), 
-                         dimnames = list(depth_layers, paste0("Sim.", 1:n_simulations), indices))
-
-# Boucle sur chaque couche de profondeur
-for (layer in depth_layers) {
-  
-  # Sélectionner les espèces présentes
-  species_in_layer <- colnames(depth_fish_biomass)[depth_fish_biomass[layer, ] > 0]
-  
-  # Filtrer les traits et retirer les colonnes constantes
-  traits_layer <- fish_traits[species_in_layer, , drop = FALSE] %>%
-    select(where(~ length(unique(.)) > 1))  
-  
-  # Skip si aucun trait variable
-  if (ncol(traits_layer) == 0) next  
-  
-  # Formatage correct de biomass_layer avec la couche de profondeur en rownames
-  biomass_layer <- matrix(as.numeric(depth_fish_biomass[layer, species_in_layer, drop = FALSE]), 
-                          nrow = 1, dimnames = list(layer, species_in_layer))
-  
-  # Calcul des indices observés avec dbFD
-  dbFD_result <- FD::dbFD(x = traits_layer, w.abun = TRUE, m = 4, a = biomass_layer, messages=F)
-  
-  # Stockage des valeurs observées
-  dbFD_result_obs[layer, "FRic"] <- dbFD_result$FRic
-  dbFD_result_obs[layer, "FDis"] <- dbFD_result$FDis
-  dbFD_result_obs[layer, "RaoQ"] <- dbFD_result$RaoQ
-  dbFD_result_obs[layer, "FEve"] <- dbFD_result$FEve
-  dbFD_result_obs[layer, "FDiv"] <- dbFD_result$FDiv  
-  
-  # Simulations pour chaque couche
-  for (sim in 1:n_simulations) {
-    randomized_traits <- randomize_traits(traits_layer)
-    
-    dbFD_sim_result <- FD::dbFD(x = randomized_traits, w.abun = TRUE, m = 4, a = biomass_layer, messages=F)
-    
-    # Stockage des valeurs simulées
-    dbFD_result_sim[layer, sim, "FRic"] <- dbFD_sim_result$FRic
-    dbFD_result_sim[layer, sim, "FDis"] <- dbFD_sim_result$FDis
-    dbFD_result_sim[layer, sim, "RaoQ"] <- dbFD_sim_result$RaoQ
-    dbFD_result_sim[layer, sim, "FEve"] <- dbFD_sim_result$FEve
-    dbFD_result_sim[layer, sim, "FDiv"] <- dbFD_sim_result$FDiv 
-  }  
-}
-
-# Calcul du SES (Standardized Effect Size) pour chaque indice séparément
-SES_results <- data.frame(depth_layer = rownames(dbFD_result_obs))
-
-for (index in indices) {
-  meanNullFD <- rowMeans(dbFD_result_sim[, , index], na.rm = TRUE)
-  sdNullFD <- apply(dbFD_result_sim[, , index], 1, sd, na.rm = TRUE)
-  SES_results[[index]] <- (dbFD_result_obs[, index] - meanNullFD) / sdNullFD
-}
-
-# Transformation des résultats pour ggplot
-results_df <- tidyr::pivot_longer(SES_results, cols = -depth_layer, names_to = "Index", values_to = "SES_FD")
-
-# Convertir depth_layer en facteur pour le bon ordre
-results_df$depth_layer <- factor(results_df$depth_layer, levels = c("Epipelagic", "Upper mesopelagic", "Lower mesopelagic", "Bathypelagic"))
-
-
-# Plot 
-ggplot(results_df, aes(x = depth_layer, y = SES_FD, color = depth_layer)) +
-  geom_point(size = 3) +
-  geom_hline(yintercept = c(1.96, -1.96), linetype = "dashed", color = "gray50") +
-  scale_color_manual(values = c("#FEA520", "#D62246", "#6255B4", "#3C685A")) +
-  labs(x = "", y = "Standard Effect Size (SES)") +
-  facet_wrap(~Index) +
-  theme_light() +
-  theme(axis.text.x = element_blank())
-
-ggsave("SES_dbFD.png", path = "figures", dpi = 700, height = 5, width = 7)
-
 ```
 
