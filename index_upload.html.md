@@ -189,8 +189,8 @@ htmltools::tagList(DT::datatable(fish_traits_sum))
 
 
 ```{=html}
-<div class="datatables html-widget html-fill-item" id="htmlwidget-466fb85ae61be7d058b2" style="width:100%;height:auto;"></div>
-<script type="application/json" data-for="htmlwidget-466fb85ae61be7d058b2">{"x":{"filter":"none","vertical":false,"data":[["Anoplogaster_cornuta","Arctozenus_risso","Argyropelecus_hemigymnus","Argyropelecus_olfersii","Bathylagus_euryops","Benthosema_glaciale","Bolinichthys_supralateralis","Borostomias_antarcticus","Ceratoscopelus_maderensis","Chauliodus_sloani","Cyclothone","Derichthys_serpentinus","Diaphus_metopoclampus","Evermannella_balbo","Gonostoma_elongatum","Holtbyrnia_anomala","Holtbyrnia_macrops","Lampanyctus_ater","Lampanyctus_crocodilus","Lampanyctus_macdonaldi","Lestidiops_sphyrenoides","Lobianchia_gemellarii","Malacosteus_niger","Maulisia_argipalla","Maulisia_mauli","Maulisia_microlepis","Maurolicus_muelleri","Melanostigma_atlanticum","Melanostomias_bartonbeani","Myctophum_punctatum","Normichthys_operosus","Notoscopelus_bolini","Notoscopelus_kroyeri","Paralepis_coregonoides","Photostylus_pycnopterus","Sagamichthys_schnakenbecki","Searsia_koefoedi","Serrivomer_beanii","Sigmops_bathyphilus","Stomias_boa","Xenodermichthys_copei"],[0.19,0.66,0.25,0.25,0.8100000000000001,0.55,0.6899999999999999,0.39,0.62,0.32,0.29,0.71,0.38,0.46,0.26,0.7,0.59,0.59,0.46,0.46,0.64,0.47,0.57,0.5600000000000001,0.54,0.4,0.54,0.57,0.34,0.58,0.59,0.59,0.52,0.66,0.32,0.65,0.57,0.41,0.34,0.32,0.65],[0.07000000000000001,0.04,0.11,0.12,0.1,0.1,0.1,0.05,0.09,0.03,0.02,0.02,0.09,0.06,0.02,0.11,0.1,0.05,0.05,0.05,0.03,0.06,0.06,0.09,0.08,0.06,0.1,0.04,0.03,0.09,0.11,0.06,0.06,0.05,0.03,0.09,0.08,0.01,0.03,0.02,0.09],[20.92,5.56,5.47,17.14,8.539999999999999,4.76,12.47,15.8,5.52,10.9,7.62,5.56,6.37,9.279999999999999,27.92,9.56,9.279999999999999,18.38,19.96,25,4.7,15.46,19.37,15.52,15.73,21.49,3.59,4.03,18.12,5.64,9.43,9.630000000000001,6.78,4.9,6.55,11.76,9.19,6.95,18.1,6.29,19.9],[4306.62,138.39,535.9,3042.32,215.67,288.1,857.14,2308.8,287.21,1427.56,461.2,102.21,496.34,746.33,6250.38,884.37,870.85,1516.36,1550.6,2223.94,184.15,1226.9,4216.4,3465.85,2055.91,1384.77,186.85,78.40000000000001,2537.25,234.42,485.04,486.45,257.14,208.24,80.09999999999999,842.9400000000001,558.91,121.05,4544.84,700.67,250.39],[0.53,2.72,1.28,0.99,1.21,1.16,1.15,0.95,2.01,2.2,2.3,1.69,0.92,1.28,0.61,1.1,1.25,1.14,1.28,1.16,2.28,1.1,0.85,1.23,1.16,1.25,1.29,1.35,1.4,1.34,1.17,1.28,1.59,1.19,1.08,1.22,1.07,0.53,1.02,0.6899999999999999,1.75],[0.4,0.7,0.54,0.71,0.35,0.33,0.34,0.48,0.5600000000000001,0.71,0.79,0.49,0.35,0.58,0.47,0.47,0.4,0.58,0.77,0.57,0.55,0.52,0.35,0.46,0.37,0.2,0.59,0.49,0.62,0.57,0.5600000000000001,0.49,0.61,0.42,0.5600000000000001,0.36,0.52,0.59,0.65,0.77,0.64],[0.29,0.12,0.25,0.27,0.08,0.19,0.2,0.2,0.21,0.11,0.2,0.04,0.19,0.16,0.18,0.21,0.21,0.2,0.21,0.2,0.1,0.22,0.25,0.21,0.21,0.17,0.17,0.04,0.12,0.16,0.18,0.2,0.2,0.13,0.08,0.16,0.14,0.09,0.23,0.1,0.11],[0.35,0.23,0.3,0.31,0.22,0.26,0.29,0.22,0.31,0.14,0.22,0.09,0.26,0.22,0.21,0.37,0.31,0.23,0.26,0.25,0.18,0.27,0.23,0.36,0.34,0.26,0.29,0.13,0.14,0.24,0.3,0.25,0.26,0.25,0.16,0.3,0.25,0.15,0.25,0.11,0.23],[0.5,0.07000000000000001,0.55,0.65,0.18,0.23,0.24,0.15,0.2,0.11,0.14,0.06,0.29,0.19,0.14,0.2,0.19,0.16,0.17,0.18,0.07000000000000001,0.24,0.18,0.22,0.2,0.21,0.23,0.09,0.13,0.22,0.22,0.2,0.19,0.09,0.15,0.16,0.21,0.03,0.15,0.08,0.16],[0.33,0.27,0.23,0.25,0.2,0.44,0.46,0.18,0.48,0.29,0.2,0.66,0.24,0.22,0.21,0.25,0.25,0.29,0.38,0.19,0.36,0.27,0.21,0.2,0.19,0.17,0.23,0.34,0.22,0.47,0.18,0.29,0.25,0.22,0.47,0.22,0.2,1,0.2,0.18,0.22],[0.4,0.24,0.28,0.26,0.26,0.3,0.33,0.24,0.34,0.15,0.23,0.13,0.35,0.23,0.22,0.38,0.36,0.25,0.29,0.4,0.19,0.29,0.17,0.37,0.36,0.33,0.27,0.12,0.16,0.28,0.33,0.28,0.29,0.27,0.18,0.36,0.26,0,0.29,0.12,0.24],[0.04,0.01,0.25,0.12,0.03,0.09,0.02,0.04,0.03,0.02,0.07000000000000001,0.01,0.06,0.03,0.02,0.06,0.04,0.02,0.02,0.02,0.02,0.03,0.02,0.07000000000000001,0.03,0.01,0.18,0.04,0.02,0.03,0.02,0.03,0.03,0.07000000000000001,0.03,0.04,0.02,0,0.08,0.01,0.02],[10.46,3.64,3.43,5.98,6.3,3.35,10.8,5.53,5.46,6.19,2.84,2.24,5.94,6.26,12.76,4.01,6.08,8.56,11.33,13.31,2.92,8.9,8.029999999999999,5.81,7.61,18.18,2.2,1.35,4.79,4.29,8.539999999999999,6.79,7.19,2.6,3.58,5.83,10.18,1.21,3.3,3.47,5],[0.44,0.68,0.36,0.34,0.47,0.47,0.45,0.57,0.5,0.26,0.54,0.31,0.4,0.43,0.57,0.63,0.64,0.44,0.45,0.45,0.6,0.41,0.83,0.64,0.63,0.64,0.55,0.41,0.85,0.43,0.68,0.37,0.41,0.63,0.78,0.62,0.64,0.33,0.55,0.89,0.57],[0.72,0.61,0.84,0.78,0.68,0.52,0.59,0.64,0.6,0.76,0.95,0.68,0.5,0.8,0.6899999999999999,0.68,0.68,0.64,0.63,0.67,0.61,0.63,0.61,0.68,0.64,0.74,0.63,0.65,0.7,0.59,0.6,0.55,0.59,0.68,0.78,0.59,0.6,0.73,0.7,0.71,0.8],[1.92,1.29,2.05,1.2,1.12,1.62,1.27,0.9,1.86,1.99,0.97,1.6,1.83,1.34,1.13,1.01,1.26,0.75,0.79,0.7,1.48,0.92,1.31,1.05,1.14,1.56,1.4,1.39,1.48,1.89,1.56,1.03,1.93,0.96,1.44,0.92,1.69,1.8,0.8,2.77,0.68],["A","A","P","P","A","P","P","P","P","P","P","P","P","A","P","A","P","P","P","P","A","P","A","P","P","A","P","A","P","P","P","P","P","A","P","P","P","A","P","P","A"],["A","A","A","A","A","A","A","A","A","P","A","A","A","A","A","A","A","A","A","A","A","A","P","A","A","A","A","A","P","A","A","A","A","A","A","A","A","A","A","P","A"],["A","A","A","A","A","A","A","P","A","A","A","A","A","A","A","A","A","A","A","A","A","A","A","A","A","A","A","A","P","A","A","A","A","A","A","A","A","A","A","P","A"],["A","P","P","P","P","P","A","P","P","A","A","P","P","A","P","P","P","P","P","P","P","P","A","P","P","P","P","A","A","P","P","P","P","A","P","P","P","P","P","P","P"],["P","A","A","A","A","A","A","P","A","P","P","A","A","P","P","A","A","A","A","P","A","P","P","A","A","A","A","A","P","A","A","A","A","A","A","A","A","A","P","A","A"],["P","A","A","A","A","A","A","P","A","P","A","A","A","P","A","A","A","A","A","A","A","A","P","A","A","A","A","A","P","A","A","A","A","A","A","A","A","A","A","P","A"],["A","A","A","A","A","A","A","A","A","A","A","A","A","P","A","A","A","A","A","A","A","A","A","A","A","A","A","A","A","A","A","A","A","A","A","A","A","A","A","A","A"],["P","P","A","A","P","P","P","P","P","A","P","A","A","A","P","A","A","P","P","P","P","P","P","P","P","P","A","A","P","P","P","P","P","P","A","A","P","P","P","P","A"],["C","B","C","C","C","B","C","C","C","A","C","A","C","A","C","C","C","C","C","C","B","C","A","C","C","C","C","B","A","C","C","C","C","A","C","C","C","A","C","A","C"],["1","3","1","1","2","3","2","2","3","1","2","3","1","1","1","3","3","2","3","2","3","2","1","2","2","2","2","3","3","3","2","3","3","3","1","2","2","3","2","2","2"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>eye_size<\/th>\n      <th>orbital_length<\/th>\n      <th>gill_outflow<\/th>\n      <th>oral_gape_surface<\/th>\n      <th>oral_gape_shape<\/th>\n      <th>oral_gape_position<\/th>\n      <th>lower_jaw_length<\/th>\n      <th>head_length<\/th>\n      <th>body_depth<\/th>\n      <th>pectoral_fin_position<\/th>\n      <th>pectoral_fin_insertion<\/th>\n      <th>transversal_shape<\/th>\n      <th>caudal_throttle_width<\/th>\n      <th>dorsal_fin_insertion<\/th>\n      <th>eye_position<\/th>\n      <th>operculum_volume<\/th>\n      <th>ventral_photophores<\/th>\n      <th>gland_head<\/th>\n      <th>chin_barbel<\/th>\n      <th>small_teeth<\/th>\n      <th>large_teeth<\/th>\n      <th>fang_teeth<\/th>\n      <th>retractable_teeth<\/th>\n      <th>internal_teeth<\/th>\n      <th>gill_raker_types<\/th>\n      <th>oral_gape_axis<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"className":"dt-right","targets":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},{"orderable":false,"targets":0},{"name":" ","targets":0},{"name":"eye_size","targets":1},{"name":"orbital_length","targets":2},{"name":"gill_outflow","targets":3},{"name":"oral_gape_surface","targets":4},{"name":"oral_gape_shape","targets":5},{"name":"oral_gape_position","targets":6},{"name":"lower_jaw_length","targets":7},{"name":"head_length","targets":8},{"name":"body_depth","targets":9},{"name":"pectoral_fin_position","targets":10},{"name":"pectoral_fin_insertion","targets":11},{"name":"transversal_shape","targets":12},{"name":"caudal_throttle_width","targets":13},{"name":"dorsal_fin_insertion","targets":14},{"name":"eye_position","targets":15},{"name":"operculum_volume","targets":16},{"name":"ventral_photophores","targets":17},{"name":"gland_head","targets":18},{"name":"chin_barbel","targets":19},{"name":"small_teeth","targets":20},{"name":"large_teeth","targets":21},{"name":"fang_teeth","targets":22},{"name":"retractable_teeth","targets":23},{"name":"internal_teeth","targets":24},{"name":"gill_raker_types","targets":25},{"name":"oral_gape_axis","targets":26}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item" id="htmlwidget-fbb79b9c0f86b430494d" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-fbb79b9c0f86b430494d">{"x":{"filter":"none","vertical":false,"data":[["Anoplogaster_cornuta","Arctozenus_risso","Argyropelecus_hemigymnus","Argyropelecus_olfersii","Bathylagus_euryops","Benthosema_glaciale","Bolinichthys_supralateralis","Borostomias_antarcticus","Ceratoscopelus_maderensis","Chauliodus_sloani","Cyclothone","Derichthys_serpentinus","Diaphus_metopoclampus","Evermannella_balbo","Gonostoma_elongatum","Holtbyrnia_anomala","Holtbyrnia_macrops","Lampanyctus_ater","Lampanyctus_crocodilus","Lampanyctus_macdonaldi","Lestidiops_sphyrenoides","Lobianchia_gemellarii","Malacosteus_niger","Maulisia_argipalla","Maulisia_mauli","Maulisia_microlepis","Maurolicus_muelleri","Melanostigma_atlanticum","Melanostomias_bartonbeani","Myctophum_punctatum","Normichthys_operosus","Notoscopelus_bolini","Notoscopelus_kroyeri","Paralepis_coregonoides","Photostylus_pycnopterus","Sagamichthys_schnakenbecki","Searsia_koefoedi","Serrivomer_beanii","Sigmops_bathyphilus","Stomias_boa","Xenodermichthys_copei"],[0.19,0.68,0.25,0.25,0.8100000000000001,0.55,0.6899999999999999,0.39,0.62,0.32,0.29,0.71,0.38,0.46,0.26,0.7,0.59,0.59,0.46,0.46,0.64,0.47,0.57,0.5600000000000001,0.54,0.4,0.54,0.57,0.34,0.58,0.59,0.59,0.52,0.66,0.32,0.65,0.57,0.41,0.34,0.32,0.65],[0.07000000000000001,0.04,0.11,0.12,0.1,0.1,0.1,0.05,0.09,0.03,0.02,0.02,0.09,0.06,0.02,0.11,0.1,0.05,0.05,0.05,0.03,0.06,0.06,0.09,0.08,0.06,0.1,0.04,0.03,0.09,0.11,0.06,0.06,0.05,0.03,0.09,0.08,0.01,0.03,0.02,0.09],[20.92,5.51,5.13,17.14,8.539999999999999,4.76,12.47,15.8,5.52,11.05,7.71,6.31,6.37,9.279999999999999,27.92,9.56,9.279999999999999,18.38,19.9,25,4.78,15.46,22.54,15.52,15.73,21.49,3.59,4.03,18.12,5.53,9.43,9.630000000000001,6.78,4.9,6.55,11.76,9.19,6.95,18.1,6.29,19.9],[4523.37,133.6,566.4299999999999,3042.32,215.67,288.1,857.14,2308.8,284.52,1427.56,567.48,102.21,496.34,746.33,6250.38,615.4299999999999,870.85,1516.36,1550.6,2223.94,199.37,1226.9,4216.4,3465.85,2055.91,1384.77,186.85,78.40000000000001,2537.25,234.42,486.3,486.45,257.85,206.72,80.09999999999999,793.22,562.05,121.05,4544.84,720.84,250.39],[0.55,2.66,1.29,0.99,1.21,1.16,1.15,0.95,2,2.2,2.2,1.69,0.92,1.28,0.61,1.26,1.25,1.14,1.28,1.16,2.13,1.1,0.85,1.23,1.16,1.25,1.29,1.35,1.4,1.34,1.17,1.28,1.58,1.21,1.08,1.51,1.09,0.53,1.02,0.75,1.75],[0.4,0.7,0.54,0.75,0.35,0.33,0.34,0.48,0.5600000000000001,0.71,0.79,0.49,0.35,0.58,0.47,0.47,0.4,0.58,0.77,0.57,0.55,0.52,0.35,0.46,0.37,0.2,0.59,0.49,0.62,0.57,0.5600000000000001,0.49,0.61,0.42,0.5600000000000001,0.36,0.52,0.59,0.65,0.76,0.64],[0.29,0.12,0.25,0.27,0.07000000000000001,0.19,0.2,0.2,0.21,0.11,0.2,0.04,0.19,0.16,0.18,0.21,0.21,0.2,0.21,0.2,0.1,0.22,0.25,0.21,0.21,0.17,0.17,0.04,0.12,0.16,0.18,0.2,0.2,0.13,0.08,0.16,0.14,0.09,0.23,0.1,0.11],[0.35,0.23,0.3,0.31,0.22,0.26,0.29,0.22,0.31,0.14,0.22,0.09,0.26,0.22,0.21,0.37,0.31,0.23,0.26,0.25,0.18,0.27,0.23,0.36,0.34,0.26,0.29,0.13,0.14,0.24,0.3,0.25,0.26,0.25,0.16,0.3,0.25,0.15,0.25,0.11,0.23],[0.5,0.07000000000000001,0.55,0.65,0.18,0.23,0.24,0.15,0.2,0.11,0.14,0.06,0.29,0.19,0.14,0.2,0.19,0.16,0.17,0.18,0.07000000000000001,0.24,0.18,0.22,0.2,0.21,0.23,0.09,0.13,0.22,0.22,0.2,0.19,0.09,0.15,0.16,0.21,0.03,0.15,0.08,0.16],[0.33,0.28,0.23,0.25,0.2,0.44,0.46,0.18,0.48,0.29,0.2,0.66,0.24,0.22,0.21,0.25,0.25,0.29,0.38,0.19,0.36,0.27,0.21,0.2,0.19,0.17,0.23,5.96,0.22,0.47,0.18,0.29,0.25,0.22,0.47,0.2,0.2,1,0.2,0.18,0.22],[0.4,0.24,0.28,0.26,0.26,0.3,0.33,0.24,0.34,0.15,0.23,0.13,0.35,0.23,0.22,0.38,0.36,0.26,0.29,0.4,0.19,0.29,0.17,0.37,0.36,0.33,0.27,0.12,0.16,0.28,0.33,0.28,0.29,0.27,0.18,0.37,0.26,0,0.29,0.12,0.24],[0.04,0.01,0.25,0.12,0.03,0.09,0.02,0.04,0.03,0.02,0.07000000000000001,0.01,0.06,0.03,0.02,0.06,0.04,0.02,0.02,0.02,0.02,0.03,0.02,0.07000000000000001,0.03,0.01,0.18,0.04,0.02,0.03,0.02,0.03,0.03,0.07000000000000001,0.03,0.04,0.02,0,0.08,0.01,0.02],[10.46,3.64,3.43,5.98,6.3,3.35,10.8,5.53,5.46,6.19,2.84,2.24,5.94,6.26,12.76,4.01,6.08,8.56,11.33,13.31,2.92,8.9,8.029999999999999,5.81,7.61,18.18,2.2,1.35,4.79,4.29,8.539999999999999,6.79,7.08,2.6,3.58,5.83,10.18,1.21,3.3,3.47,5],[0.44,0.67,0.36,0.34,0.46,0.47,0.45,0.58,0.5,0.26,0.54,0.31,0.4,0.43,0.57,0.63,0.64,0.44,0.45,0.45,0.6,0.41,0.83,0.64,0.63,0.64,0.55,0.47,0.85,0.43,0.68,0.37,0.41,0.63,0.78,0.62,0.64,0.33,0.55,0.89,0.57],[0.72,0.61,0.84,0.77,0.68,0.52,0.59,0.64,0.6,0.76,0.95,0.68,0.5,0.8,0.6899999999999999,0.68,0.68,0.64,0.63,0.67,0.61,0.63,0.61,0.68,0.64,0.74,0.63,0.65,0.7,0.59,0.6,0.55,0.59,0.68,0.78,0.59,0.6,0.73,0.7,0.71,0.8],[1.92,1.31,2.15,1.2,1.12,1.62,1.27,0.9,1.86,1.93,1.01,1.59,1.83,1.34,1.13,1.01,1.26,0.75,0.8,0.7,1.46,0.92,1.14,1.05,1.14,1.56,1.4,1.39,1.48,1.95,1.56,1.03,1.93,0.96,1.44,0.92,1.69,1.8,0.8,2.77,0.68],["A","A","P","P","A","P","P","P","P","P","P","P","P","A","P","A","P","P","P","P","A","P","A","P","P","A","P","A","P","P","P","P","P","A","P","P","P","A","P","P","A"],["A","A","A","A","A","A","A","A","A","P","A","A","A","A","A","A","A","A","A","A","A","A","P","A","A","A","A","A","P","A","A","A","A","A","A","A","A","A","A","P","A"],["A","A","A","A","A","A","A","P","A","A","A","A","A","A","A","A","A","A","A","A","A","A","A","A","A","A","A","A","P","A","A","A","A","A","A","A","A","A","A","P","A"],["A","P","P","P","P","P","A","P","P","A","A","P","P","A","P","P","P","P","P","P","P","P","A","P","P","P","P","A","A","P","P","P","P","A","P","P","P","P","P","P","P"],["P","A","A","A","A","A","A","P","A","P","P","A","A","P","P","A","A","A","A","P","A","P","P","A","A","A","A","A","P","A","A","A","A","A","A","A","A","A","P","A","A"],["P","A","A","A","A","A","A","P","A","P","A","A","A","P","A","A","A","A","A","A","A","A","P","A","A","A","A","A","P","A","A","A","A","A","A","A","A","A","A","P","A"],["A","A","A","A","A","A","A","A","A","A","A","A","A","P","A","A","A","A","A","A","A","A","A","A","A","A","A","A","A","A","A","A","A","A","A","A","A","A","A","A","A"],["P","P","A","A","P","P","P","P","P","A","P","A","A","A","P","A","A","P","P","P","P","P","P","P","P","P","A","A","P","P","P","P","P","P","A","A","P","P","P","P","A"],["C","B","C","C","C","B","C","C","C","A","C","A","C","A","C","C","C","C","C","C","B","C","A","C","C","C","C","B","A","C","C","C","C","A","C","C","C","A","C","A","C"],["1","3","1","1","2","3","2","2","3","1","2","3","1","1","1","3","3","2","3","2","3","2","1","2","2","2","2","3","3","3","2","3","3","3","1","2","2","3","2","2","2"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>eye_size<\/th>\n      <th>orbital_length<\/th>\n      <th>gill_outflow<\/th>\n      <th>oral_gape_surface<\/th>\n      <th>oral_gape_shape<\/th>\n      <th>oral_gape_position<\/th>\n      <th>lower_jaw_length<\/th>\n      <th>head_length<\/th>\n      <th>body_depth<\/th>\n      <th>pectoral_fin_position<\/th>\n      <th>pectoral_fin_insertion<\/th>\n      <th>transversal_shape<\/th>\n      <th>caudal_throttle_width<\/th>\n      <th>dorsal_fin_insertion<\/th>\n      <th>eye_position<\/th>\n      <th>operculum_volume<\/th>\n      <th>ventral_photophores<\/th>\n      <th>gland_head<\/th>\n      <th>chin_barbel<\/th>\n      <th>small_teeth<\/th>\n      <th>large_teeth<\/th>\n      <th>fang_teeth<\/th>\n      <th>retractable_teeth<\/th>\n      <th>internal_teeth<\/th>\n      <th>gill_raker_types<\/th>\n      <th>oral_gape_axis<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"className":"dt-right","targets":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},{"orderable":false,"targets":0},{"name":" ","targets":0},{"name":"eye_size","targets":1},{"name":"orbital_length","targets":2},{"name":"gill_outflow","targets":3},{"name":"oral_gape_surface","targets":4},{"name":"oral_gape_shape","targets":5},{"name":"oral_gape_position","targets":6},{"name":"lower_jaw_length","targets":7},{"name":"head_length","targets":8},{"name":"body_depth","targets":9},{"name":"pectoral_fin_position","targets":10},{"name":"pectoral_fin_insertion","targets":11},{"name":"transversal_shape","targets":12},{"name":"caudal_throttle_width","targets":13},{"name":"dorsal_fin_insertion","targets":14},{"name":"eye_position","targets":15},{"name":"operculum_volume","targets":16},{"name":"ventral_photophores","targets":17},{"name":"gland_head","targets":18},{"name":"chin_barbel","targets":19},{"name":"small_teeth","targets":20},{"name":"large_teeth","targets":21},{"name":"fang_teeth","targets":22},{"name":"retractable_teeth","targets":23},{"name":"internal_teeth","targets":24},{"name":"gill_raker_types","targets":25},{"name":"oral_gape_axis","targets":26}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
 ```
 
 
@@ -365,8 +365,8 @@ htmltools::tagList(DT::datatable(biomass_sum))
 
 
 ```{=html}
-<div class="datatables html-widget html-fill-item" id="htmlwidget-b5b46e2705ae6d508e00" style="width:100%;height:auto;"></div>
-<script type="application/json" data-for="htmlwidget-b5b46e2705ae6d508e00">{"x":{"filter":"none","vertical":false,"data":[["1","2","3","4"],["Bathypelagic","Epipelagic","Lower mesopelagic","Upper mesopelagic"],[7.796,0.258,4.768,4.549],[41,13,32,28]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>depth_layer<\/th>\n      <th>biomass_depth<\/th>\n      <th>n<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"className":"dt-right","targets":[2,3]},{"orderable":false,"targets":0},{"name":" ","targets":0},{"name":"depth_layer","targets":1},{"name":"biomass_depth","targets":2},{"name":"n","targets":3}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item" id="htmlwidget-1737d671f56dd52655e2" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-1737d671f56dd52655e2">{"x":{"filter":"none","vertical":false,"data":[["1","2","3","4"],["Bathypelagic","Epipelagic","Lower mesopelagic","Upper mesopelagic"],[7.796,0.258,4.768,4.549],[41,13,32,28]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>depth_layer<\/th>\n      <th>biomass_depth<\/th>\n      <th>n<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"className":"dt-right","targets":[2,3]},{"orderable":false,"targets":0},{"name":" ","targets":0},{"name":"depth_layer","targets":1},{"name":"biomass_depth","targets":2},{"name":"n","targets":3}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
 ```
 
 
@@ -397,8 +397,8 @@ htmltools::tagList(DT::datatable(fish_traits_cat))
 
 
 ```{=html}
-<div class="datatables html-widget html-fill-item" id="htmlwidget-5f3bae7bb36da904f71f" style="width:100%;height:auto;"></div>
-<script type="application/json" data-for="htmlwidget-5f3bae7bb36da904f71f">{"x":{"filter":"none","vertical":false,"data":[["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26"],["eye_size","orbital_length","gill_outflow","oral_gape_surface","oral_gape_shape","oral_gape_position","lower_jaw_length","head_length","body_depth","pectoral_fin_position","pectoral_fin_insertion","transversal_shape","caudal_throttle_width","dorsal_fin_insertion","eye_position","operculum_volume","ventral_photophores","gland_head","chin_barbel","small_teeth","large_teeth","fang_teeth","retractable_teeth","internal_teeth","gill_raker_types","oral_gape_axis"],["Q","Q","Q","Q","Q","Q","Q","Q","Q","Q","Q","Q","Q","Q","Q","Q","N","N","N","N","N","N","N","N","O","O"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>trait_name<\/th>\n      <th>trait_type<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"orderable":false,"targets":0},{"name":" ","targets":0},{"name":"trait_name","targets":1},{"name":"trait_type","targets":2}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item" id="htmlwidget-ae9cdbc395861f77a9c5" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-ae9cdbc395861f77a9c5">{"x":{"filter":"none","vertical":false,"data":[["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26"],["eye_size","orbital_length","gill_outflow","oral_gape_surface","oral_gape_shape","oral_gape_position","lower_jaw_length","head_length","body_depth","pectoral_fin_position","pectoral_fin_insertion","transversal_shape","caudal_throttle_width","dorsal_fin_insertion","eye_position","operculum_volume","ventral_photophores","gland_head","chin_barbel","small_teeth","large_teeth","fang_teeth","retractable_teeth","internal_teeth","gill_raker_types","oral_gape_axis"],["Q","Q","Q","Q","Q","Q","Q","Q","Q","Q","Q","Q","Q","Q","Q","Q","N","N","N","N","N","N","N","N","O","O"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>trait_name<\/th>\n      <th>trait_type<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"orderable":false,"targets":0},{"name":" ","targets":0},{"name":"trait_name","targets":1},{"name":"trait_type","targets":2}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
 ```
 
 
@@ -427,8 +427,8 @@ htmltools::tagList(DT::datatable(asb_sp_fish_occ))
 
 
 ```{=html}
-<div class="datatables html-widget html-fill-item" id="htmlwidget-851faa0c330f7c49c567" style="width:100%;height:auto;"></div>
-<script type="application/json" data-for="htmlwidget-851faa0c330f7c49c567">{"x":{"filter":"none","vertical":false,"data":[["Upper mesopelagic","Bathypelagic","Epipelagic","Lower mesopelagic"],[0,1,0,0],[1,1,1,1],[1,1,1,1],[1,1,1,1],[0,1,0,0],[1,1,1,1],[0,1,0,1],[1,1,0,1],[1,1,1,1],[1,1,1,1],[1,1,0,1],[1,1,0,1],[0,1,0,1],[1,1,0,1],[0,1,0,1],[0,1,0,0],[1,1,0,1],[1,1,0,1],[1,1,0,1],[0,1,0,0],[1,1,1,1],[1,1,0,1],[1,1,0,0],[0,1,0,1],[1,1,0,1],[0,1,0,0],[1,1,1,1],[1,1,0,1],[1,1,1,1],[1,1,1,1],[0,1,0,0],[0,1,1,1],[1,1,1,1],[1,1,0,1],[0,1,0,0],[1,1,0,1],[1,1,0,1],[1,1,0,1],[0,1,0,0],[1,1,1,1],[1,1,0,1]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>Anoplogaster_cornuta<\/th>\n      <th>Arctozenus_risso<\/th>\n      <th>Argyropelecus_hemigymnus<\/th>\n      <th>Argyropelecus_olfersii<\/th>\n      <th>Bathylagus_euryops<\/th>\n      <th>Benthosema_glaciale<\/th>\n      <th>Bolinichthys_supralateralis<\/th>\n      <th>Borostomias_antarcticus<\/th>\n      <th>Ceratoscopelus_maderensis<\/th>\n      <th>Chauliodus_sloani<\/th>\n      <th>Cyclothone<\/th>\n      <th>Derichthys_serpentinus<\/th>\n      <th>Diaphus_metopoclampus<\/th>\n      <th>Evermannella_balbo<\/th>\n      <th>Gonostoma_elongatum<\/th>\n      <th>Holtbyrnia_anomala<\/th>\n      <th>Holtbyrnia_macrops<\/th>\n      <th>Lampanyctus_ater<\/th>\n      <th>Lampanyctus_crocodilus<\/th>\n      <th>Lampanyctus_macdonaldi<\/th>\n      <th>Lestidiops_sphyrenoides<\/th>\n      <th>Lobianchia_gemellarii<\/th>\n      <th>Malacosteus_niger<\/th>\n      <th>Maulisia_argipalla<\/th>\n      <th>Maulisia_mauli<\/th>\n      <th>Maulisia_microlepis<\/th>\n      <th>Maurolicus_muelleri<\/th>\n      <th>Melanostigma_atlanticum<\/th>\n      <th>Melanostomias_bartonbeani<\/th>\n      <th>Myctophum_punctatum<\/th>\n      <th>Normichthys_operosus<\/th>\n      <th>Notoscopelus_bolini<\/th>\n      <th>Notoscopelus_kroyeri<\/th>\n      <th>Paralepis_coregonoides<\/th>\n      <th>Photostylus_pycnopterus<\/th>\n      <th>Sagamichthys_schnakenbecki<\/th>\n      <th>Searsia_koefoedi<\/th>\n      <th>Serrivomer_beanii<\/th>\n      <th>Sigmops_bathyphilus<\/th>\n      <th>Stomias_boa<\/th>\n      <th>Xenodermichthys_copei<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"className":"dt-right","targets":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41]},{"orderable":false,"targets":0},{"name":" ","targets":0},{"name":"Anoplogaster_cornuta","targets":1},{"name":"Arctozenus_risso","targets":2},{"name":"Argyropelecus_hemigymnus","targets":3},{"name":"Argyropelecus_olfersii","targets":4},{"name":"Bathylagus_euryops","targets":5},{"name":"Benthosema_glaciale","targets":6},{"name":"Bolinichthys_supralateralis","targets":7},{"name":"Borostomias_antarcticus","targets":8},{"name":"Ceratoscopelus_maderensis","targets":9},{"name":"Chauliodus_sloani","targets":10},{"name":"Cyclothone","targets":11},{"name":"Derichthys_serpentinus","targets":12},{"name":"Diaphus_metopoclampus","targets":13},{"name":"Evermannella_balbo","targets":14},{"name":"Gonostoma_elongatum","targets":15},{"name":"Holtbyrnia_anomala","targets":16},{"name":"Holtbyrnia_macrops","targets":17},{"name":"Lampanyctus_ater","targets":18},{"name":"Lampanyctus_crocodilus","targets":19},{"name":"Lampanyctus_macdonaldi","targets":20},{"name":"Lestidiops_sphyrenoides","targets":21},{"name":"Lobianchia_gemellarii","targets":22},{"name":"Malacosteus_niger","targets":23},{"name":"Maulisia_argipalla","targets":24},{"name":"Maulisia_mauli","targets":25},{"name":"Maulisia_microlepis","targets":26},{"name":"Maurolicus_muelleri","targets":27},{"name":"Melanostigma_atlanticum","targets":28},{"name":"Melanostomias_bartonbeani","targets":29},{"name":"Myctophum_punctatum","targets":30},{"name":"Normichthys_operosus","targets":31},{"name":"Notoscopelus_bolini","targets":32},{"name":"Notoscopelus_kroyeri","targets":33},{"name":"Paralepis_coregonoides","targets":34},{"name":"Photostylus_pycnopterus","targets":35},{"name":"Sagamichthys_schnakenbecki","targets":36},{"name":"Searsia_koefoedi","targets":37},{"name":"Serrivomer_beanii","targets":38},{"name":"Sigmops_bathyphilus","targets":39},{"name":"Stomias_boa","targets":40},{"name":"Xenodermichthys_copei","targets":41}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item" id="htmlwidget-6fddaf18959dd98c5c33" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-6fddaf18959dd98c5c33">{"x":{"filter":"none","vertical":false,"data":[["Upper mesopelagic","Bathypelagic","Epipelagic","Lower mesopelagic"],[0,1,0,0],[1,1,1,1],[1,1,1,1],[1,1,1,1],[0,1,0,0],[1,1,1,1],[0,1,0,1],[1,1,0,1],[1,1,1,1],[1,1,1,1],[1,1,0,1],[1,1,0,1],[0,1,0,1],[1,1,0,1],[0,1,0,1],[0,1,0,0],[1,1,0,1],[1,1,0,1],[1,1,0,1],[0,1,0,0],[1,1,1,1],[1,1,0,1],[1,1,0,0],[0,1,0,1],[1,1,0,1],[0,1,0,0],[1,1,1,1],[1,1,0,1],[1,1,1,1],[1,1,1,1],[0,1,0,0],[0,1,1,1],[1,1,1,1],[1,1,0,1],[0,1,0,0],[1,1,0,1],[1,1,0,1],[1,1,0,1],[0,1,0,0],[1,1,1,1],[1,1,0,1]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>Anoplogaster_cornuta<\/th>\n      <th>Arctozenus_risso<\/th>\n      <th>Argyropelecus_hemigymnus<\/th>\n      <th>Argyropelecus_olfersii<\/th>\n      <th>Bathylagus_euryops<\/th>\n      <th>Benthosema_glaciale<\/th>\n      <th>Bolinichthys_supralateralis<\/th>\n      <th>Borostomias_antarcticus<\/th>\n      <th>Ceratoscopelus_maderensis<\/th>\n      <th>Chauliodus_sloani<\/th>\n      <th>Cyclothone<\/th>\n      <th>Derichthys_serpentinus<\/th>\n      <th>Diaphus_metopoclampus<\/th>\n      <th>Evermannella_balbo<\/th>\n      <th>Gonostoma_elongatum<\/th>\n      <th>Holtbyrnia_anomala<\/th>\n      <th>Holtbyrnia_macrops<\/th>\n      <th>Lampanyctus_ater<\/th>\n      <th>Lampanyctus_crocodilus<\/th>\n      <th>Lampanyctus_macdonaldi<\/th>\n      <th>Lestidiops_sphyrenoides<\/th>\n      <th>Lobianchia_gemellarii<\/th>\n      <th>Malacosteus_niger<\/th>\n      <th>Maulisia_argipalla<\/th>\n      <th>Maulisia_mauli<\/th>\n      <th>Maulisia_microlepis<\/th>\n      <th>Maurolicus_muelleri<\/th>\n      <th>Melanostigma_atlanticum<\/th>\n      <th>Melanostomias_bartonbeani<\/th>\n      <th>Myctophum_punctatum<\/th>\n      <th>Normichthys_operosus<\/th>\n      <th>Notoscopelus_bolini<\/th>\n      <th>Notoscopelus_kroyeri<\/th>\n      <th>Paralepis_coregonoides<\/th>\n      <th>Photostylus_pycnopterus<\/th>\n      <th>Sagamichthys_schnakenbecki<\/th>\n      <th>Searsia_koefoedi<\/th>\n      <th>Serrivomer_beanii<\/th>\n      <th>Sigmops_bathyphilus<\/th>\n      <th>Stomias_boa<\/th>\n      <th>Xenodermichthys_copei<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"className":"dt-right","targets":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41]},{"orderable":false,"targets":0},{"name":" ","targets":0},{"name":"Anoplogaster_cornuta","targets":1},{"name":"Arctozenus_risso","targets":2},{"name":"Argyropelecus_hemigymnus","targets":3},{"name":"Argyropelecus_olfersii","targets":4},{"name":"Bathylagus_euryops","targets":5},{"name":"Benthosema_glaciale","targets":6},{"name":"Bolinichthys_supralateralis","targets":7},{"name":"Borostomias_antarcticus","targets":8},{"name":"Ceratoscopelus_maderensis","targets":9},{"name":"Chauliodus_sloani","targets":10},{"name":"Cyclothone","targets":11},{"name":"Derichthys_serpentinus","targets":12},{"name":"Diaphus_metopoclampus","targets":13},{"name":"Evermannella_balbo","targets":14},{"name":"Gonostoma_elongatum","targets":15},{"name":"Holtbyrnia_anomala","targets":16},{"name":"Holtbyrnia_macrops","targets":17},{"name":"Lampanyctus_ater","targets":18},{"name":"Lampanyctus_crocodilus","targets":19},{"name":"Lampanyctus_macdonaldi","targets":20},{"name":"Lestidiops_sphyrenoides","targets":21},{"name":"Lobianchia_gemellarii","targets":22},{"name":"Malacosteus_niger","targets":23},{"name":"Maulisia_argipalla","targets":24},{"name":"Maulisia_mauli","targets":25},{"name":"Maulisia_microlepis","targets":26},{"name":"Maurolicus_muelleri","targets":27},{"name":"Melanostigma_atlanticum","targets":28},{"name":"Melanostomias_bartonbeani","targets":29},{"name":"Myctophum_punctatum","targets":30},{"name":"Normichthys_operosus","targets":31},{"name":"Notoscopelus_bolini","targets":32},{"name":"Notoscopelus_kroyeri","targets":33},{"name":"Paralepis_coregonoides","targets":34},{"name":"Photostylus_pycnopterus","targets":35},{"name":"Sagamichthys_schnakenbecki","targets":36},{"name":"Searsia_koefoedi","targets":37},{"name":"Serrivomer_beanii","targets":38},{"name":"Sigmops_bathyphilus","targets":39},{"name":"Stomias_boa","targets":40},{"name":"Xenodermichthys_copei","targets":41}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
 ```
 
 
@@ -483,16 +483,16 @@ round(fspaces_quality_fish$"quality_fspaces", 3)
 
 ```
                mad
-pcoa_1d      0.143
-pcoa_2d      0.079
-pcoa_3d      0.050
-pcoa_4d      0.030
-pcoa_5d      0.023
-pcoa_6d      0.017
-pcoa_7d      0.014
+pcoa_1d      0.140
+pcoa_2d      0.077
+pcoa_3d      0.048
+pcoa_4d      0.029
+pcoa_5d      0.022
+pcoa_6d      0.016
+pcoa_7d      0.015
 pcoa_8d      0.015
 pcoa_9d      0.017
-pcoa_10d     0.019
+pcoa_10d     0.020
 tree_average 0.040
 ```
 
@@ -531,15 +531,13 @@ htmltools::tagList(DT::datatable(variance_df))
 
 
 ```{=html}
-<div class="datatables html-widget html-fill-item" id="htmlwidget-de987f366511b2c9e461" style="width:100%;height:auto;"></div>
-<script type="application/json" data-for="htmlwidget-de987f366511b2c9e461">{"x":{"filter":"none","vertical":false,"data":[["1","2","3","4"],["PC1","PC2","PC3","PC4"],[15.96,12.38,7.97,7.19]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>PC<\/th>\n      <th>VarianceExplained<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"className":"dt-right","targets":2},{"orderable":false,"targets":0},{"name":" ","targets":0},{"name":"PC","targets":1},{"name":"VarianceExplained","targets":2}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item" id="htmlwidget-3c0e19a2c3f3be1131c4" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-3c0e19a2c3f3be1131c4">{"x":{"filter":"none","vertical":false,"data":[["1","2","3","4"],["PC1","PC2","PC3","PC4"],[15.86,12.2,7.87,7.29]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>PC<\/th>\n      <th>VarianceExplained<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"className":"dt-right","targets":2},{"orderable":false,"targets":0},{"name":" ","targets":0},{"name":"PC","targets":1},{"name":"VarianceExplained","targets":2}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
 ```
 
 
 :::
 :::
-
-
 
 
 ### 2.3.2 Illustrating the quality of the functional spaces
@@ -596,22 +594,21 @@ fish_tr_faxes$"tr_faxes_stat"[which(fish_tr_faxes$"tr_faxes_stat"$"p.value" < 0.
 
 ```
                 trait axis         test stat value p.value
-1            eye_size  PC1 Linear Model   r2 0.164  0.0087
-2            eye_size  PC2 Linear Model   r2 0.174  0.0067
-3            eye_size  PC3 Linear Model   r2 0.101  0.0425
-4            eye_size  PC4 Linear Model   r2 0.162  0.0091
-5      orbital_length  PC1 Linear Model   r2 0.406  0.0000
-6      orbital_length  PC2 Linear Model   r2 0.104  0.0394
-10       gill_outflow  PC2 Linear Model   r2 0.513  0.0000
-13  oral_gape_surface  PC1 Linear Model   r2 0.126  0.0225
-14  oral_gape_surface  PC2 Linear Model   r2 0.500  0.0000
-18    oral_gape_shape  PC2 Linear Model   r2 0.150  0.0123
-24 oral_gape_position  PC4 Linear Model   r2 0.228  0.0016
-26   lower_jaw_length  PC2 Linear Model   r2 0.685  0.0000
-29        head_length  PC1 Linear Model   r2 0.330  0.0001
-30        head_length  PC2 Linear Model   r2 0.382  0.0000
-34         body_depth  PC2 Linear Model   r2 0.353  0.0000
-35         body_depth  PC3 Linear Model   r2 0.196  0.0038
+1            eye_size  PC1 Linear Model   r2 0.161  0.0093
+2            eye_size  PC2 Linear Model   r2 0.183  0.0052
+3            eye_size  PC3 Linear Model   r2 0.133  0.0192
+4            eye_size  PC4 Linear Model   r2 0.139  0.0163
+5      orbital_length  PC1 Linear Model   r2 0.410  0.0000
+10       gill_outflow  PC2 Linear Model   r2 0.511  0.0000
+13  oral_gape_surface  PC1 Linear Model   r2 0.139  0.0165
+14  oral_gape_surface  PC2 Linear Model   r2 0.513  0.0000
+18    oral_gape_shape  PC2 Linear Model   r2 0.166  0.0083
+24 oral_gape_position  PC4 Linear Model   r2 0.221  0.0019
+26   lower_jaw_length  PC2 Linear Model   r2 0.699  0.0000
+29        head_length  PC1 Linear Model   r2 0.325  0.0001
+30        head_length  PC2 Linear Model   r2 0.376  0.0000
+34         body_depth  PC2 Linear Model   r2 0.352  0.0000
+35         body_depth  PC3 Linear Model   r2 0.203  0.0031
 ```
 
 
@@ -647,15 +644,14 @@ fish_tr_faxes_2$"tr_faxes_stat"[which(fish_tr_faxes_2$"tr_faxes_stat"$"p.value" 
 
 ```
                     trait axis           test stat value p.value
-2   pectoral_fin_position  PC2   Linear Model   r2 0.278  0.0004
-5  pectoral_fin_insertion  PC1   Linear Model   r2 0.282  0.0004
-6  pectoral_fin_insertion  PC2   Linear Model   r2 0.406  0.0000
-9       transversal_shape  PC1   Linear Model   r2 0.116  0.0297
-11      transversal_shape  PC3   Linear Model   r2 0.218  0.0021
-14  caudal_throttle_width  PC2   Linear Model   r2 0.401  0.0000
-19   dorsal_fin_insertion  PC3   Linear Model   r2 0.190  0.0044
-23           eye_position  PC3   Linear Model   r2 0.191  0.0043
-26       operculum_volume  PC2   Linear Model   r2 0.104  0.0393
+2   pectoral_fin_position  PC2   Linear Model   r2 0.175  0.0065
+5  pectoral_fin_insertion  PC1   Linear Model   r2 0.279  0.0004
+6  pectoral_fin_insertion  PC2   Linear Model   r2 0.388  0.0000
+9       transversal_shape  PC1   Linear Model   r2 0.123  0.0246
+11      transversal_shape  PC3   Linear Model   r2 0.220  0.0020
+14  caudal_throttle_width  PC2   Linear Model   r2 0.410  0.0000
+19   dorsal_fin_insertion  PC3   Linear Model   r2 0.184  0.0051
+23           eye_position  PC3   Linear Model   r2 0.204  0.0030
 32    ventral_photophores  PC4 Kruskal-Wallis eta2 0.590  0.0000
 33             gland_head  PC1 Kruskal-Wallis eta2 0.245  0.0011
 ```
@@ -694,18 +690,17 @@ fish_tr_faxes_3$"tr_faxes_stat"[which(fish_tr_faxes_3$"tr_faxes_stat"$"p.value" 
 ```
               trait axis           test stat value p.value
 1       chin_barbel  PC1 Kruskal-Wallis eta2 0.142  0.0107
-3       chin_barbel  PC3 Kruskal-Wallis eta2 0.116  0.0186
-4       chin_barbel  PC4 Kruskal-Wallis eta2 0.176  0.0051
-5       small_teeth  PC1 Kruskal-Wallis eta2 0.323  0.0002
-9       large_teeth  PC1 Kruskal-Wallis eta2 0.454  0.0000
-10      large_teeth  PC2 Kruskal-Wallis eta2 0.214  0.0022
+4       chin_barbel  PC4 Kruskal-Wallis eta2 0.183  0.0043
+5       small_teeth  PC1 Kruskal-Wallis eta2 0.317  0.0003
+9       large_teeth  PC1 Kruskal-Wallis eta2 0.461  0.0000
+10      large_teeth  PC2 Kruskal-Wallis eta2 0.205  0.0027
 13       fang_teeth  PC1 Kruskal-Wallis eta2 0.410  0.0000
-21   internal_teeth  PC1 Kruskal-Wallis eta2 0.076  0.0467
-23   internal_teeth  PC3 Kruskal-Wallis eta2 0.634  0.0000
-25 gill_raker_types  PC1 Kruskal-Wallis eta2 0.331  0.0007
-26 gill_raker_types  PC2 Kruskal-Wallis eta2 0.366  0.0004
-30   oral_gape_axis  PC2 Kruskal-Wallis eta2 0.378  0.0003
-31   oral_gape_axis  PC3 Kruskal-Wallis eta2 0.243  0.0036
+21   internal_teeth  PC1 Kruskal-Wallis eta2 0.082  0.0408
+23   internal_teeth  PC3 Kruskal-Wallis eta2 0.619  0.0000
+25 gill_raker_types  PC1 Kruskal-Wallis eta2 0.329  0.0007
+26 gill_raker_types  PC2 Kruskal-Wallis eta2 0.381  0.0003
+30   oral_gape_axis  PC2 Kruskal-Wallis eta2 0.360  0.0004
+31   oral_gape_axis  PC3 Kruskal-Wallis eta2 0.240  0.0038
 ```
 
 
@@ -750,8 +745,8 @@ htmltools::tagList(DT::datatable(traits_effect))
 
 
 ```{=html}
-<div class="datatables html-widget html-fill-item" id="htmlwidget-49f10170c44f48d59955" style="width:100%;height:auto;"></div>
-<script type="application/json" data-for="htmlwidget-49f10170c44f48d59955">{"x":{"filter":"none","vertical":false,"data":[["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31","32","33","34","35","36","37","38","39","40"],["large_teeth","fang_teeth","orbital_length","gill_raker_types","head_length","small_teeth","pectoral_fin_insertion","gland_head","eye_size","chin_barbel","oral_gape_surface","transversal_shape","internal_teeth","lower_jaw_length","gill_outflow","oral_gape_surface","pectoral_fin_insertion","caudal_throttle_width","head_length","oral_gape_axis","gill_raker_types","body_depth","pectoral_fin_position","large_teeth","eye_size","oral_gape_shape","orbital_length","operculum_volume","internal_teeth","oral_gape_axis","transversal_shape","body_depth","eye_position","dorsal_fin_insertion","chin_barbel","eye_size","ventral_photophores","oral_gape_position","chin_barbel","eye_size"],["PC1","PC1","PC1","PC1","PC1","PC1","PC1","PC1","PC1","PC1","PC1","PC1","PC1","PC2","PC2","PC2","PC2","PC2","PC2","PC2","PC2","PC2","PC2","PC2","PC2","PC2","PC2","PC2","PC3","PC3","PC3","PC3","PC3","PC3","PC3","PC3","PC4","PC4","PC4","PC4"],["Kruskal-Wallis","Kruskal-Wallis","Linear Model","Kruskal-Wallis","Linear Model","Kruskal-Wallis","Linear Model","Kruskal-Wallis","Linear Model","Kruskal-Wallis","Linear Model","Linear Model","Kruskal-Wallis","Linear Model","Linear Model","Linear Model","Linear Model","Linear Model","Linear Model","Kruskal-Wallis","Kruskal-Wallis","Linear Model","Linear Model","Kruskal-Wallis","Linear Model","Linear Model","Linear Model","Linear Model","Kruskal-Wallis","Kruskal-Wallis","Linear Model","Linear Model","Linear Model","Linear Model","Kruskal-Wallis","Linear Model","Kruskal-Wallis","Linear Model","Kruskal-Wallis","Linear Model"],["eta2","eta2","r2","eta2","r2","eta2","r2","eta2","r2","eta2","r2","r2","eta2","r2","r2","r2","r2","r2","r2","eta2","eta2","r2","r2","eta2","r2","r2","r2","r2","eta2","eta2","r2","r2","r2","r2","eta2","r2","eta2","r2","eta2","r2"],[0.454,0.41,0.406,0.331,0.33,0.323,0.282,0.245,0.164,0.142,0.126,0.116,0.076,0.6850000000000001,0.513,0.5,0.406,0.401,0.382,0.378,0.366,0.353,0.278,0.214,0.174,0.15,0.104,0.104,0.634,0.243,0.218,0.196,0.191,0.19,0.116,0.101,0.59,0.228,0.176,0.162],[0,0,0,0.0007,0.0001,0.0002,0.0004,0.0011,0.008699999999999999,0.0107,0.0225,0.0297,0.0467,0,0,0,0,0,0,0.0003,0.0004,0,0.0004,0.0022,0.0067,0.0123,0.0394,0.0393,0,0.0036,0.0021,0.0038,0.0043,0.0044,0.0186,0.0425,0,0.0016,0.0051,0.0091]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>trait<\/th>\n      <th>axis<\/th>\n      <th>test<\/th>\n      <th>stat<\/th>\n      <th>value<\/th>\n      <th>p.value<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"className":"dt-right","targets":[5,6]},{"orderable":false,"targets":0},{"name":" ","targets":0},{"name":"trait","targets":1},{"name":"axis","targets":2},{"name":"test","targets":3},{"name":"stat","targets":4},{"name":"value","targets":5},{"name":"p.value","targets":6}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item" id="htmlwidget-49e614bf6eefbb8a0eaa" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-49e614bf6eefbb8a0eaa">{"x":{"filter":"none","vertical":false,"data":[["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31","32","33","34","35","36","37"],["large_teeth","orbital_length","fang_teeth","gill_raker_types","head_length","small_teeth","pectoral_fin_insertion","gland_head","eye_size","chin_barbel","oral_gape_surface","transversal_shape","internal_teeth","lower_jaw_length","oral_gape_surface","gill_outflow","caudal_throttle_width","pectoral_fin_insertion","gill_raker_types","head_length","oral_gape_axis","body_depth","large_teeth","eye_size","pectoral_fin_position","oral_gape_shape","internal_teeth","oral_gape_axis","transversal_shape","eye_position","body_depth","dorsal_fin_insertion","eye_size","ventral_photophores","oral_gape_position","chin_barbel","eye_size"],["PC1","PC1","PC1","PC1","PC1","PC1","PC1","PC1","PC1","PC1","PC1","PC1","PC1","PC2","PC2","PC2","PC2","PC2","PC2","PC2","PC2","PC2","PC2","PC2","PC2","PC2","PC3","PC3","PC3","PC3","PC3","PC3","PC3","PC4","PC4","PC4","PC4"],["Kruskal-Wallis","Linear Model","Kruskal-Wallis","Kruskal-Wallis","Linear Model","Kruskal-Wallis","Linear Model","Kruskal-Wallis","Linear Model","Kruskal-Wallis","Linear Model","Linear Model","Kruskal-Wallis","Linear Model","Linear Model","Linear Model","Linear Model","Linear Model","Kruskal-Wallis","Linear Model","Kruskal-Wallis","Linear Model","Kruskal-Wallis","Linear Model","Linear Model","Linear Model","Kruskal-Wallis","Kruskal-Wallis","Linear Model","Linear Model","Linear Model","Linear Model","Linear Model","Kruskal-Wallis","Linear Model","Kruskal-Wallis","Linear Model"],["eta2","r2","eta2","eta2","r2","eta2","r2","eta2","r2","eta2","r2","r2","eta2","r2","r2","r2","r2","r2","eta2","r2","eta2","r2","eta2","r2","r2","r2","eta2","eta2","r2","r2","r2","r2","r2","eta2","r2","eta2","r2"],[0.461,0.41,0.41,0.329,0.325,0.317,0.279,0.245,0.161,0.142,0.139,0.123,0.082,0.699,0.513,0.511,0.41,0.388,0.381,0.376,0.36,0.352,0.205,0.183,0.175,0.166,0.619,0.24,0.22,0.204,0.203,0.184,0.133,0.59,0.221,0.183,0.139],[0,0,0,0.0007,0.0001,0.0003,0.0004,0.0011,0.009299999999999999,0.0107,0.0165,0.0246,0.0408,0,0,0,0,0,0.0003,0,0.0004,0,0.0027,0.0052,0.0065,0.0083,0,0.0038,0.002,0.003,0.0031,0.0051,0.0192,0,0.0019,0.0043,0.0163]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>trait<\/th>\n      <th>axis<\/th>\n      <th>test<\/th>\n      <th>stat<\/th>\n      <th>value<\/th>\n      <th>p.value<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"className":"dt-right","targets":[5,6]},{"orderable":false,"targets":0},{"name":" ","targets":0},{"name":"trait","targets":1},{"name":"axis","targets":2},{"name":"test","targets":3},{"name":"stat","targets":4},{"name":"value","targets":5},{"name":"p.value","targets":6}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
 ```
 
 
@@ -976,33 +971,182 @@ ggsave("functional_space.png", path = "figures", dpi = 800, height = 8, width = 
 - correction distance matrix (obtenue avec Gower) = "none" or "lingoes" transformation avec "sqrt" ne permet pas de transformer la matrice en "euclidean"
 - randomisation des traits des espèces par couche de profondeur
 
-- __interprétation__ : La richesse fonctionnelle (FRic) augmente avec la profondeur pour atteindre un maximum en bathypélagique, ce qui correspond à nos anciens résultats. Cependant, les valeurs de SES FRic sont également positives en épipélagique, ce qui indique une richesse fonctionnelle plus élevée qu'attendue au hasard. 
-En revanche, les SES FDIS sont significativement plus faibles en épipélagique, ce qui indique que les espèces représentant le plus de biomasse sont similaires sur le plan fonctionnel. 
-- comment faire pour tester la symétrie et la normalité des valeurs de SES, suelement sur les quatres valeurs que j'obtiens par indices ? 
 
 
 ::: {.cell}
 
 ```{.r .cell-code}
+# # Model parameters ----
+# # Number of simulations
+# n_simulations <- 9
+# 
+# # correction method to use when the distance matrix cannot be represented in a Euclidean space
+# corr_method <- "lingoes"# "none"
+# 
+# # Depth layers
+# depth_layers <- rownames(depth_fish_biomass)
+# 
+# # List of indices to be calculated
+# indices <- c("FRic", "FDis", "FDiv", "FEve")
+# 
+# # Matrices for storing observed and simulated results
+# dbFD_result_obs <- matrix(NA, nrow = length(depth_layers), ncol = length(indices),
+#                           dimnames = list(depth_layers, indices))
+# 
+# dbFD_result_sim <- array(NA, dim = c(length(depth_layers), n_simulations, length(indices)),
+#                          dimnames = list(depth_layers, paste0("Sim.", 1:n_simulations), indices))
+# 
+# # Function to randomize traits while preserving factor levels----
+# randomize_traits <- function(traits_mat) {
+#   randomized_mat <- traits_mat
+#   # Randomisation of columns
+#   for (trait in colnames(traits_mat)) {
+#     randomized_mat[, trait] <- sample(traits_mat[, trait], replace = FALSE)
+#   }
+#   return(randomized_mat)
+# }
+# 
+# # Loop on each depth layer ----
+# for (layer in depth_layers) {
+# 
+#   # Select the species present in the selected depth layer
+#   species_in_layer <- colnames(depth_fish_biomass)[depth_fish_biomass[layer, ] > 0]
+# 
+#   # Filter lines (traits) and remove constant columns
+#   traits_layer <- fish_traits[species_in_layer, , drop = FALSE] %>%
+#     select(where(~ length(unique(.)) > 1))
+# 
+#   # If no variable lines remain, we move on to the next layer
+#   if (ncol(traits_layer) == 0) next
+# 
+#   # Correct formatting of biomass_layer with depth layer in rownames
+#   # Converts biomass data to matrix, which is required by FD::dbFD()
+#   biomass_layer <- matrix(as.numeric(depth_fish_biomass[layer, species_in_layer, drop = FALSE]),
+#                           nrow = 1, dimnames = list(layer, species_in_layer))
+# 
+#   # Calculation of observed indices with FD::dbFD
+#   dbFD_result <- FD::dbFD(x = traits_layer, w.abun = TRUE, m = 4, a = biomass_layer, messages=F,
+#                           corr = corr_method)
+# 
+#   # Storage of observed values
+#   dbFD_result_obs[layer, "FRic"] <- dbFD_result$FRic
+#   dbFD_result_obs[layer, "FDis"] <- dbFD_result$FDis
+#   dbFD_result_obs[layer, "FEve"] <- dbFD_result$FEve
+#   dbFD_result_obs[layer, "FDiv"] <- dbFD_result$FDiv
+# 
+#   # Simulations for each layer
+#   for (sim in 1:n_simulations) {
+#     randomized_traits <- randomize_traits(traits_layer)
+# 
+#     dbFD_sim_result <- FD::dbFD(x = randomized_traits, w.abun = TRUE, m = 4, a = biomass_layer, messages=F,
+#                                 corr = corr_method)
+# 
+#     # Storage of simulated values
+#     dbFD_result_sim[layer, sim, "FRic"] <- dbFD_sim_result$FRic
+#     dbFD_result_sim[layer, sim, "FDis"] <- dbFD_sim_result$FDis
+#     dbFD_result_sim[layer, sim, "FEve"] <- dbFD_sim_result$FEve
+#     dbFD_result_sim[layer, sim, "FDiv"] <- dbFD_sim_result$FDiv
+#   }
+# }
+# 
+# # Calculation of the SES (Standardized Effect Size) ----
+# SES_results <- data.frame(depth_layer = rownames(dbFD_result_obs))
+# 
+# for (index in indices) {
+#   meanNullFD <- rowMeans(dbFD_result_sim[, , index], na.rm = TRUE)
+#   sdNullFD <- apply(dbFD_result_sim[, , index], 1, sd, na.rm = TRUE)
+#   SES_results[[index]] <- (dbFD_result_obs[, index] - meanNullFD) / sdNullFD
+# }
+# 
+# # Plot ----
+# results_df <- tidyr::pivot_longer(
+#   SES_results,
+#   cols = -depth_layer,
+#   names_to = "index",
+#   values_to = "SES_FD"
+# )
+# 
+# results_df$depth_layer <- factor(
+#   results_df$depth_layer,
+#   levels = c(
+#     "Epipelagic",
+#     "Upper mesopelagic",
+#     "Lower mesopelagic",
+#     "Bathypelagic"
+#   )
+# )
+# 
+# results_df$index <- factor(
+#   results_df$index,
+#   levels = c("FRic",
+#              "FDis",
+#              "FDiv",
+#              "FEve"),
+#   labels = c(
+#     "Functional richness",
+#     "Functional dispersion",
+#     "Functional divergence",
+#     "Functional evenness"
+#   )
+# )
+# 
+# ggplot(results_df, aes(x = depth_layer, y = SES_FD, color = depth_layer)) +
+#   geom_point(size = 3) +
+#   facet_wrap(~index) +
+#   geom_hline(yintercept = c(1.96, -1.96), linetype = "dashed", color = "gray40", size=0.8) +
+#   scale_color_manual(values = c("#FEA520", "#D62246", "#6255B4", "#3C685A")) +
+#   labs(x = "", y = "Standard Effect Size (SES)") +
+#   theme_light() +
+#   theme(axis.text.x = element_blank(),
+#         strip.text.x = element_text(size = 14, color = "black"),
+#         strip.background = element_rect(fill = "white"),
+#         axis.title = element_text(size = 13),
+#         axis.text = element_text(size = 13)) +
+#   guides(col="none", fill="none")
+# 
+# ggsave("SES_dbFD.png", path = "figures", dpi = 700, height = 5, width = 7)
+```
+:::
+
+
+
+## 3.2. Two levels (stations and depth layer) 
+
+
+
+::: {.cell}
+
+```{.r .cell-code}
+station_sp <- rbind(data_biomass_2002_2019, data_biomass_2021_2022) %>%
+  as.data.frame() %>%
+  left_join(metadata) %>%
+  select(species, biomass_sp, volume_filtered, station) %>%
+  # Divide biomass by the volume filtered at each trawl (g.m3)
+  mutate(biomass_cpu = (biomass_sp / volume_filtered) * 1000) %>%
+  select(species, biomass_cpu, station) %>%
+  replace(is.na(.), 0) %>%
+  group_by(species, station) %>%
+  mutate(biomass = sum(biomass_cpu)) %>%
+  select(-biomass_cpu) %>%
+  distinct() %>%
+  tidyr::pivot_wider(names_from = species, values_from = biomass) %>%
+  replace(is.na(.), 0) %>%
+  arrange(station) %>%
+  filter(!station %in% c("H0411", "L0731", "L0736")) %>%
+  tibble::column_to_rownames(var = "station") %>%
+  select(order(colnames(.))) %>%
+  as.matrix()
+
+
 # Model parameters ----
-# Number of simulations
 n_simulations <- 9
 
-# correction method to use when the distance matrix cannot be represented in a Euclidean space
-corr_method <- "lingoes"# "none" 
+# Correction method for non-Euclidean distances
+corr_method <- "lingoes"
+depth_layers <- rownames(station_sp)  
 
-# Depth layers
-depth_layers <- rownames(depth_fish_biomass)
-
-# List of indices to be calculated
-indices <- c("FRic", "FDis", "FDiv", "FEve") 
-
-# Matrices for storing observed and simulated results
-dbFD_result_obs <- matrix(NA, nrow = length(depth_layers), ncol = length(indices), 
-                          dimnames = list(depth_layers, indices))
-
-dbFD_result_sim <- array(NA, dim = c(length(depth_layers), n_simulations, length(indices)), 
-                         dimnames = list(depth_layers, paste0("Sim.", 1:n_simulations), indices))
+# Indices to calculate
+indices <- c("FRic", "FDis", "FDiv", "FEve")
 
 # Function to randomize traits while preserving factor levels----
 randomize_traits <- function(traits_mat) {
@@ -1014,68 +1158,186 @@ randomize_traits <- function(traits_mat) {
   return(randomized_mat)
 }
 
-# Loop on each depth layer ----
-for (layer in depth_layers) {
-  
-  # Select the species present in the selected depth layer
-  species_in_layer <- colnames(depth_fish_biomass)[depth_fish_biomass[layer, ] > 0]
-  
-  # Filter lines (traits) and remove constant columns
-  traits_layer <- fish_traits[species_in_layer, , drop = FALSE] %>%
-    select(where(~ length(unique(.)) > 1))  
-  
-  # If no variable lines remain, we move on to the next layer
-  if (ncol(traits_layer) == 0) next  
-  
-  # Correct formatting of biomass_layer with depth layer in rownames
-  # Converts biomass data to matrix, which is required by FD::dbFD()
-  biomass_layer <- matrix(as.numeric(depth_fish_biomass[layer, species_in_layer, drop = FALSE]), 
-                          nrow = 1, dimnames = list(layer, species_in_layer))
-  
-  # Calculation of observed indices with FD::dbFD
-  dbFD_result <- FD::dbFD(x = traits_layer, w.abun = TRUE, m = 4, a = biomass_layer, messages=F,
-                          corr = corr_method)
-  
-  # Storage of observed values
-  dbFD_result_obs[layer, "FRic"] <- dbFD_result$FRic
-  dbFD_result_obs[layer, "FDis"] <- dbFD_result$FDis
-  dbFD_result_obs[layer, "FEve"] <- dbFD_result$FEve
-  dbFD_result_obs[layer, "FDiv"] <- dbFD_result$FDiv  
-  
-  # Simulations for each layer
-  for (sim in 1:n_simulations) {
-    randomized_traits <- randomize_traits(traits_layer)
-    
-    dbFD_sim_result <- FD::dbFD(x = randomized_traits, w.abun = TRUE, m = 4, a = biomass_layer, messages=F,
-                                corr = corr_method)
-    
-    # Storage of simulated values
-    dbFD_result_sim[layer, sim, "FRic"] <- dbFD_sim_result$FRic
-    dbFD_result_sim[layer, sim, "FDis"] <- dbFD_sim_result$FDis
-    dbFD_result_sim[layer, sim, "FEve"] <- dbFD_sim_result$FEve
-    dbFD_result_sim[layer, sim, "FDiv"] <- dbFD_sim_result$FDiv 
-  }  
-}
-
-# Calculation of the SES (Standardized Effect Size) ----
-SES_results <- data.frame(depth_layer = rownames(dbFD_result_obs))
-
-for (index in indices) {
-  meanNullFD <- rowMeans(dbFD_result_sim[, , index], na.rm = TRUE)
-  sdNullFD <- apply(dbFD_result_sim[, , index], 1, sd, na.rm = TRUE)
-  SES_results[[index]] <- (dbFD_result_obs[, index] - meanNullFD) / sdNullFD
-}
-
-# Plot ----
-results_df <- tidyr::pivot_longer(
-  SES_results,
-  cols = -depth_layer,
-  names_to = "index",
-  values_to = "SES_FD"
+# Data definition: list with depth and station matrices ----
+analysis_levels <- list(
+  depth_layer = depth_fish_biomass,
+  station = station_sp
 )
 
-results_df$depth_layer <- factor(
-  results_df$depth_layer,
+# Store results ----
+all_results <- list()
+dbFD_result_sim_list <- list()
+
+# Function to calculate FD indices and SES ----
+calculate_FD_and_SES <- function(data_matrix, traits_data, n_simulations, indices, corr_method) {
+  layers <- rownames(data_matrix)
+  dbFD_result_obs <- matrix(NA, nrow = length(layers), ncol = length(indices), 
+                            dimnames = list(layers, indices))
+  dbFD_result_sim <- array(NA, dim = c(length(layers), n_simulations, length(indices)),
+                           dimnames = list(layers, paste0("Sim.", 1:n_simulations), indices))
+  
+  # Loop through each layer
+  for (layer in layers) {
+    species_in_layer <- colnames(data_matrix)[data_matrix[layer, ] > 0]
+    traits_layer <- traits_data[species_in_layer, , drop = FALSE] %>%
+      select(where(~ length(unique(.)) > 1)) %>%
+      droplevels()
+    
+    if (ncol(traits_layer) == 0) next
+    
+    biomass_layer <- matrix(as.numeric(data_matrix[layer, species_in_layer, drop = FALSE]),
+                            nrow = 1, dimnames = list(layer, species_in_layer))
+    
+    # Calculate FD indices for observed data
+    dbFD_result <- FD::dbFD(x = traits_layer, w.abun = TRUE, m = 4, a = biomass_layer,
+                            messages = FALSE, corr = corr_method)
+    
+    # Verify structure of dbFD_result
+    indices_names <- names(dbFD_result)  
+    
+    # Extract valid indices
+    valid_indices <- intersect(indices, indices_names)
+    dbFD_result_obs[layer, valid_indices] <- dbFD_result[valid_indices]
+    
+    # Random simulations
+    for (sim in 1:n_simulations) {
+      randomized_traits <- randomize_traits(traits_layer)
+      dbFD_sim_result <- FD::dbFD(x = randomized_traits, w.abun = TRUE, m = 4, a = biomass_layer,
+                                  messages = FALSE, corr = corr_method)
+      
+      # Verify structure of dbFD_sim_result
+      indices_names_sim <- names(dbFD_sim_result)
+      valid_indices_sim <- intersect(indices, indices_names_sim)
+      
+      # Store simulation results
+      dbFD_result_sim[layer, sim, valid_indices_sim] <- dbFD_sim_result[valid_indices_sim]
+    }
+  }
+  
+  # Calculate SES (Standardized Effect Size) ----
+  SES_results <- data.frame(name = rownames(dbFD_result_obs))
+  for (index in indices) {
+    meanNullFD <- rowMeans(dbFD_result_sim[, , index], na.rm = TRUE)
+    sdNullFD <- apply(dbFD_result_sim[, , index], 1, sd, na.rm = TRUE)
+    SES_results[[index]] <- (dbFD_result_obs[, index] - meanNullFD) / sdNullFD
+  }
+  
+  return(list(dbFD_result_obs = dbFD_result_obs, dbFD_result_sim = dbFD_result_sim, SES_results = SES_results))
+}
+
+# Loop through analysis levels
+for (level in names(analysis_levels)) {
+  data_matrix <- analysis_levels[[level]]
+  layers <- rownames(data_matrix)
+  
+  # Matrices for observed and simulated results
+  dbFD_result_obs <- matrix(NA, nrow = length(layers), ncol = length(indices),
+                            dimnames = list(layers, indices))
+  
+  dbFD_result_sim <- array(NA, dim = c(length(layers), n_simulations, length(indices)),
+                           dimnames = list(layers, paste0("Sim.", 1:n_simulations), indices))
+  
+  # Loop through each layer
+  for (layer in layers) {
+    species_in_layer <- colnames(data_matrix)[data_matrix[layer, ] > 0]
+    traits_layer <- fish_traits[species_in_layer, , drop = FALSE] %>%
+      select(where(~ length(unique(.)) > 1)) %>%
+      droplevels()
+    
+    if (ncol(traits_layer) == 0) next
+    
+    biomass_layer <- matrix(as.numeric(data_matrix[layer, species_in_layer, drop = FALSE]),
+                            nrow = 1, dimnames = list(layer, species_in_layer))
+    
+    # Calculate FD indices for the observed data
+    dbFD_result <- FD::dbFD(x = traits_layer, w.abun = TRUE, m = 4, a = biomass_layer,
+                            messages = FALSE, corr = corr_method)
+    
+    # Store observed results
+    dbFD_result_obs[layer, "FRic"] <- dbFD_result$FRic
+    dbFD_result_obs[layer, "FDis"] <- dbFD_result$FDis
+    dbFD_result_obs[layer, "FEve"] <- dbFD_result$FEve
+    dbFD_result_obs[layer, "FDiv"] <- dbFD_result$FDiv
+    
+    # Perform random simulations
+    for (sim in 1:n_simulations) {
+      randomized_traits <- randomize_traits(traits_layer)
+      
+      dbFD_sim_result <- FD::dbFD(x = randomized_traits, w.abun = TRUE, m = 4, a = biomass_layer,
+                                  messages = FALSE, corr = corr_method)
+      
+      # Store simulated results
+      dbFD_result_sim[layer, sim, "FRic"] <- dbFD_sim_result$FRic
+      dbFD_result_sim[layer, sim, "FDis"] <- dbFD_sim_result$FDis
+      dbFD_result_sim[layer, sim, "FEve"] <- dbFD_sim_result$FEve
+      dbFD_result_sim[layer, sim, "FDiv"] <- dbFD_sim_result$FDiv
+    }
+  }
+  
+  # Save simulated results for normality tests
+  dbFD_result_sim_list[[level]] <- dbFD_result_sim
+  
+  # Calculate SES (Standardized Effect Size)
+  SES_results <- data.frame(level = level, name = rownames(dbFD_result_obs))
+  for (index in indices) {
+    meanNullFD <- rowMeans(dbFD_result_sim[, , index], na.rm = TRUE)
+    sdNullFD <- apply(dbFD_result_sim[, , index], 1, sd, na.rm = TRUE)
+    SES_results[[index]] <- (dbFD_result_obs[, index] - meanNullFD) / sdNullFD
+  }
+  
+  all_results[[level]] <- SES_results
+}
+
+# Normality and symmetry tests ----
+library(nortest)
+library(moments)
+
+# Normality and symmetry results
+normality_results <- list()
+
+for (level in names(all_results)) {
+  SES_data <- all_results[[level]]
+  simulated_values <- dbFD_result_sim_list[[level]]
+  
+  normality_test <- data.frame(level = level, name = SES_data$name)
+  
+  for (index in indices) {
+    # Normality test (Shapiro-Wilk)
+    normality_test[[paste0(index, "_shapiro_p")]] <- apply(simulated_values[, , index], 1, function(x) shapiro.test(x)$p.value)
+    
+    # Skewness 
+    normality_test[[paste0(index, "_skewness")]] <- apply(simulated_values[, , index], 1, skewness)
+  }
+  
+  normality_results[[level]] <- normality_test
+}
+
+# Stockage final des résultats
+normality_results_combined <- bind_rows(normality_results$station, normality_results$depth_layer, .id = "level")
+
+# Combine results
+SES_results_depth_layer <- all_results$depth_layer %>%
+  tidyr::pivot_longer(cols = -c(name, level), names_to = "index", values_to = "SES_FD") %>%
+  mutate(depth_layer=name)
+
+SES_results_station <- all_results$station %>%
+  rename(station=name) %>%
+  tidyr::pivot_longer(cols = -c(station, level), names_to = "index", values_to = "SES_FD") %>%
+  inner_join(metadata %>% select(station, depth), by = "station") %>%
+  mutate(
+    depth_layer = case_when(
+      between(depth, 0, 174) ~ "Epipelagic",
+      between(depth, 175, 699) ~ "Upper mesopelagic",
+      between(depth, 700, 999) ~ "Lower mesopelagic",
+      between(depth, 1000, 2000) ~ "Bathypelagic"
+    )
+  )
+
+# Combine datasets
+SES_results_combined <- bind_rows(SES_results_station, SES_results_depth_layer)
+
+SES_results_combined$depth_layer <- factor(
+  SES_results_combined$depth_layer,
   levels = c(
     "Epipelagic",
     "Upper mesopelagic",
@@ -1084,12 +1346,9 @@ results_df$depth_layer <- factor(
   )
 )
 
-results_df$index <- factor(
-  results_df$index,
-  levels = c("FRic",
-             "FDis",
-             "FDiv",
-             "FEve"),
+SES_results_combined$index <- factor(
+  SES_results_combined$index,
+  levels = c("FRic", "FDis", "FDiv", "FEve"),
   labels = c(
     "Functional richness",
     "Functional dispersion",
@@ -1098,254 +1357,100 @@ results_df$index <- factor(
   )
 )
 
-ggplot(results_df, aes(x = depth_layer, y = SES_FD, color = depth_layer)) +
-  geom_point(size = 3) +
-  facet_wrap(~index) +
-  geom_hline(yintercept = c(1.96, -1.96), linetype = "dashed", color = "gray40", size=0.8) +
+# Plot ----
+ggplot(SES_results_combined, aes(x = depth_layer, y = SES_FD)) +
+  geom_boxplot(data = SES_results_combined %>% filter(level == "station"),
+               aes(color = depth_layer, fill = depth_layer),
+               alpha = 0.08, width = 0.5, outlier.shape = NA) +
+  geom_point(data = SES_results_combined %>% filter(level == "depth_layer"),
+             aes(color = depth_layer),
+             size = 5, shape = 18) +
+  geom_jitter(data = SES_results_combined %>% filter(level == "station"),
+              aes(color = depth_layer),
+              size = 1, width = 0.2, alpha = 0.35) +
+  geom_hline(yintercept = c(1.96, -1.96), linetype = "dashed", color = "gray40", size = 0.8) +
   scale_color_manual(values = c("#FEA520", "#D62246", "#6255B4", "#3C685A")) +
-  labs(x = "", y = "Standard Effect Size (SES)") +
+  scale_fill_manual(values = c("#FEA520", "#D62246", "#6255B4", "#3C685A")) +
+  facet_wrap(~ index, labeller = labeller(index = c(
+    FRic = "Functional richness",
+    FDis = "Functional dispersion",
+    FDiv = "Functional divergence",
+    FEve = "Functional evenness"
+  ))) +
+  labs(x = NULL, y = "Standard Effect Size (SES)") +
   theme_light() +
-  theme(axis.text.x = element_blank(),
-        strip.text.x = element_text(size = 14, color = "black"),
-        strip.background = element_rect(fill = "white"),
-        axis.title = element_text(size = 13),
-        axis.text = element_text(size = 13)) +
-  guides(col="none", fill="none")
+  theme(
+    axis.text.x = element_blank(),
+    strip.text.x = element_text(size = 14, color = "black"),
+    strip.background = element_rect(fill = "white"),
+    axis.title = element_text(size = 13),
+    axis.text = element_text(size = 13)
+  ) +
+  guides(col = "none", fill = "none")
 ```
 
 ::: {.cell-output-display}
-![](index_upload_files/figure-html/ses_dbFD-1.png){width=672}
+![](index_upload_files/figure-html/ses_dbFD_2_levels-1.png){width=672}
 :::
 
 ```{.r .cell-code}
-ggsave("SES_dbFD.png", path = "figures", dpi = 700, height = 5, width = 7)
+#ggsave("SES_dbFD_two_levels.png", path = "figures", dpi = 700, height = 7, width = 9)
+
+#save(SES_results_combined, normality_results_combined, file = "data.RData")
 ```
 :::
 
 
 
-## 3.2. Normality and symmetry tests
-
-- (Botta-Dukát, 2018)
-
-- On the diversity index values obtained at random
-
+- Functional dispersion significant in the epipelagic layer
 
 
 ::: {.cell}
 
 ```{.r .cell-code}
-# normality and symetry tests ----
-# test_norm  <- SES_values_reps %>%
-#   tibble::remove_rownames() %>%
-#   filter(index %in% c("fdis", "fdiv", "feve", "fric"))
-# 
-# # Compute skewness and Lilliefors tests to check normaltiy and symetry 
-# stat_indices <- test_norm %>% 
-#   group_by(index, depth_layer) %>% 
-#   summarise(
-#     skewness = round(e1071::skewness(SES),2),
-#     Lilliefors_pvalue = round(nortest::lillie.test(SES)$p.value,2)
-#   )
-# 
-# htmltools::tagList(DT::datatable(stat_indices))
+sp_epi <- depth_fish_biomass %>% 
+  as.data.frame() %>% 
+  tibble::rownames_to_column(var = "depth_layer") %>% 
+  filter(depth_layer=="Epipelagic") %>% 
+  tidyr::pivot_longer(!depth_layer, values_to = "biomass", names_to = "species") %>% 
+  filter(biomass>0) %>% 
+  select(species) %>% 
+  pull()
+
+alpha_fd_indices_fish <- mFD::alpha.fd.multidim(
+  sp_faxes_coord   = sp_faxes_coord_fish[ , c("PC1", "PC2", "PC3", "PC4")],
+  asb_sp_w         = depth_fish_biomass,
+  ind_vect         = c("fdis", "fdiv"),
+  scaling          = TRUE,
+  check_input      = TRUE,
+  details_returned = TRUE)
+
+plots_alpha <- mFD::alpha.multidim.plot(
+  output_alpha_fd_multidim = alpha_fd_indices_fish,
+  plot_asb_nm              = c("Epipelagic"),
+  ind_nm                   = c("fdis", "fdiv"),
+  faxes                    = NULL,
+  faxes_nm                 = NULL,
+  range_faxes              = c(NA, NA),
+  plot_sp_nm               = sp_epi,
+  save_file                = FALSE,
+  check_input              = TRUE) 
+
+plots_alpha$fdis$PC1_PC2
 ```
+
+::: {.cell-output-display}
+![](index_upload_files/figure-html/Fdis_epi-1.png){width=576}
 :::
-
-
-
-## 3.4. Two levels (stations and depth layer) 
-
-
-
-::: {.cell}
 
 ```{.r .cell-code}
-# # Model parameters ----
-# n_simulations <- 9
-# 
-# # Correction method for non-Euclidean distances
-# corr_method <- "lingoes" 
-# depth_layers <- rownames(station_sp)  # Depth layers
-# 
-# # Indices to calculate
-# indices <- c("FRic", "FDis", "FDiv", "FEve")  
-# 
-# # Data definition: list with depth and station matrices ----
-# analysis_levels <- list(
-#   depth_layer = depth_fish_biomass,
-#   station = station_sp
-# )
-# 
-# # Store results ----
-# all_results <- list()
-# 
-# for (level in names(analysis_levels)) {
-#   data_matrix <- analysis_levels[[level]]
-#   layers <- rownames(data_matrix)
-#   
-#   # Matrices for observed and simulated results ----
-#   dbFD_result_obs <- matrix(NA, nrow = length(layers), ncol = length(indices), 
-#                             dimnames = list(layers, indices))
-#   
-#   dbFD_result_sim <- array(NA, dim = c(length(layers), n_simulations, length(indices)), 
-#                            dimnames = list(layers, paste0("Sim.", 1:n_simulations), indices))
-#   
-#   # Loop through each layer ----
-#   for (layer in layers) {
-#     species_in_layer <- colnames(data_matrix)[data_matrix[layer, ] > 0]
-#     traits_layer <- fish_traits[species_in_layer, , drop = FALSE] %>%
-#       select(where(~ length(unique(.)) > 1)) %>%
-#       droplevels()
-#     
-#     if (ncol(traits_layer) == 0) next
-#     
-#     biomass_layer <- matrix(as.numeric(data_matrix[layer, species_in_layer, drop = FALSE]), 
-#                             nrow = 1, dimnames = list(layer, species_in_layer))
-#     
-#     # Calculate FD indices for the observed data ----
-#     dbFD_result <- FD::dbFD(x = traits_layer, w.abun = TRUE, m = 4, a = biomass_layer, 
-#                             messages = FALSE, corr = corr_method)
-#     
-#     # Store observed results
-#     dbFD_result_obs[layer, "FRic"] <- dbFD_result$FRic
-#     dbFD_result_obs[layer, "FDis"] <- dbFD_result$FDis
-#     dbFD_result_obs[layer, "FEve"] <- dbFD_result$FEve
-#     dbFD_result_obs[layer, "FDiv"] <- dbFD_result$FDiv  
-#     
-#     # Perform random simulations ----
-#     for (sim in 1:n_simulations) {
-#       randomized_traits <- randomize_traits(traits_layer)
-#       
-#       dbFD_sim_result <- FD::dbFD(x = randomized_traits, w.abun = TRUE, m = 4, a = biomass_layer, 
-#                                   messages = FALSE, corr = corr_method)
-#       
-#       # Store simulated results
-#       dbFD_result_sim[layer, sim, "FRic"] <- dbFD_sim_result$FRic
-#       dbFD_result_sim[layer, sim, "FDis"] <- dbFD_sim_result$FDis
-#       dbFD_result_sim[layer, sim, "FEve"] <- dbFD_sim_result$FEve
-#       dbFD_result_sim[layer, sim, "FDiv"] <- dbFD_sim_result$FDiv
-#     }
-#   }
-#   
-#   # Calculate SES (Standardized Effect Size) ----
-#   SES_results <- data.frame(level = level, name = rownames(dbFD_result_obs))
-#   for (index in indices) {
-#     meanNullFD <- rowMeans(dbFD_result_sim[, , index], na.rm = TRUE)
-#     sdNullFD <- apply(dbFD_result_sim[, , index], 1, sd, na.rm = TRUE)
-#     SES_results[[index]] <- (dbFD_result_obs[, index] - meanNullFD) / sdNullFD
-#   }
-#   
-#   all_results[[level]] <- SES_results
-# }
-# 
-# # Final result storage ----
-# SES_results_depth_layer <- all_results$depth_layer %>% 
-#  tidyr::pivot_longer(cols = -c(name, level), names_to = "index", values_to = "SES_FD") %>% 
-#   mutate(depth_layer=name)
-# 
-# SES_results_station <- all_results$station %>%
-#   rename(station=name) %>% 
-#   tidyr::pivot_longer(cols = -c(station, level), names_to = "index", values_to = "SES_FD") %>% 
-#   inner_join(metadata %>% select(station, depth), by = "station") %>%
-#   # add column with depth layer
-#   mutate(
-#     depth_layer = case_when(
-#       between(depth, 0, 174) ~ "Epipelagic",
-#       between(depth, 175, 699) ~ "Upper mesopelagic",
-#       between(depth, 700, 999) ~ "Lower mesopelagic",
-#       between(depth, 1000, 2000) ~ "Bathypelagic"
-#     )
-#   ) 
-# 
-# # Combine datasets ----
-# SES_results_combined <- bind_rows(SES_results_station, SES_results_depth_layer)
-# 
-# SES_results_combined$depth_layer <- factor(
-#   SES_results_combined$depth_layer,
-#   levels = c(
-#     "Epipelagic",
-#     "Upper mesopelagic",
-#     "Lower mesopelagic",
-#     "Bathypelagic"
-#   )
-# )
-# 
-# SES_results_combined$index <- factor(
-#   SES_results_combined$index,
-#   levels = c("FRic", "FDis", "FDiv", "FEve"),
-#   labels = c(
-#     "Functional richness",
-#     "Functional dispersion",
-#     "Functional divergence",
-#     "Functional evenness"
-#   )
-# )
-# 
-# # Plot ----
-# ggplot(SES_results_combined, aes(x = depth_layer, y = SES_FD)) +
-#   geom_boxplot(data = SES_results_combined %>% filter(level == "station"),
-#                aes(color = depth_layer, fill = depth_layer),
-#                alpha = 0.08, width = 0.5, outlier.shape = NA) +
-#   geom_point(data = SES_results_combined %>% filter(level == "depth_layer"),
-#              aes(color = depth_layer),
-#              size = 5, shape = 18) +
-#   geom_jitter(data = SES_results_combined %>% filter(level == "station"),
-#               aes(color = depth_layer),
-#               size = 1, width = 0.2, alpha = 0.35) +
-#   geom_hline(yintercept = c(1.96, -1.96), linetype = "dashed", color = "gray40", size = 0.8) +
-#   scale_color_manual(values = c("#FEA520", "#D62246", "#6255B4", "#3C685A")) +
-#   scale_fill_manual(values = c("#FEA520", "#D62246", "#6255B4", "#3C685A")) +
-#   facet_wrap(~ index, labeller = labeller(index = c(
-#     FRic = "Functional richness", 
-#     FDis = "Functional dispersion", 
-#     FDiv = "Functional divergence", 
-#     FEve = "Functional evenness"
-#   ))) + 
-#   labs(x = NULL, y = "Standard Effect Size (SES)") + 
-#   theme_light() +
-#   theme(
-#     axis.text.x = element_blank(),  
-#     strip.text.x = element_text(size = 14, color = "black"), 
-#     strip.background = element_rect(fill = "white"),  
-#     axis.title = element_text(size = 13),
-#     axis.text = element_text(size = 13)
-#   ) +
-#   guides(col = "none", fill = "none")
-# #ggsave("SES_dbFD_two_levels.png", path = "figures", dpi = 700, height = 7, width = 9)
+plots_alpha$fdis$PC3_PC4
 ```
+
+::: {.cell-output-display}
+![](index_upload_files/figure-html/Fdis_epi-2.png){width=576}
 :::
-
-
-
-
-- the red dashed line = normal distribution
-
-
-::: {.cell}
-
-```{.r .cell-code}
-# test_norm$depth_layer <- factor(
-#   test_norm$depth_layer,
-#   levels = c(
-#     "Epipelagic",
-#     "Upper mesopelagic",
-#     "Lower mesopelagic",
-#     "Bathypelagic"
-#   )
-# )
-# 
-# # Density plot with normal density overlay
-# ggpubr::ggdensity(test_norm, x = "SES", fill = "gray", col = "white") +
-#   facet_grid(depth_layer~index, scales = "free") +
-#   ggpubr::stat_overlay_normal_density(color = "red", linetype = "dashed", size = 1) +  
-#   theme_light() +
-#   labs(title = "Distribution of values of the random communites in compariaosn to the normal distribution",
-#        x = "Values", 
-#        y = "Density")
-```
 :::
-
 
 
 
@@ -1722,8 +1827,8 @@ htmltools::tagList(DT::datatable(combined_results_df))
 
 
 ```{=html}
-<div class="datatables html-widget html-fill-item" id="htmlwidget-c1e8c7870475ca621022" style="width:100%;height:auto;"></div>
-<script type="application/json" data-for="htmlwidget-c1e8c7870475ca621022">{"x":{"filter":"none","vertical":false,"data":[["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26"],["ventral_photophores","gland_head","chin_barbel","small_teeth","large_teeth","fang_teeth","retractable_teeth","internal_teeth","gill_raker_types","oral_gape_axis","eye_size","orbital_length","gill_outflow","oral_gape_surface","oral_gape_shape","oral_gape_position","lower_jaw_length","head_length","body_depth","pectoral_fin_position","pectoral_fin_insertion","transversal_shape","caudal_throttle_width","dorsal_fin_insertion","eye_position","operculum_volume"],["Categorical","Categorical","Categorical","Categorical","Categorical","Categorical","Categorical","Categorical","Categorical","Categorical","Numeric","Numeric","Numeric","Numeric","Numeric","Numeric","Numeric","Numeric","Numeric","Numeric","Numeric","Numeric","Numeric","Numeric","Numeric","Numeric"],[0.103,0.2,0.067,0.332,0.194,0.361,0.034,0.044,0.357,0.198,0.206,0.206,0.015,0.046,0.044,0.004,0.041,0.267,0.002,0.008,0.278,0.006,0.008999999999999999,0.003,0.277,0.07099999999999999],[0.025,0.003,0.057,0,0.003,0,0.128,0.098,0,0.008,0.003,0.003,0.449,0.179,0.187,0.712,0.204,0.001,0.794,0.575,0,0.623,0.556,0.719,0,0.092]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>Trait<\/th>\n      <th>Type<\/th>\n      <th>Eta_R_squared<\/th>\n      <th>P_value<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"className":"dt-right","targets":[3,4]},{"orderable":false,"targets":0},{"name":" ","targets":0},{"name":"Trait","targets":1},{"name":"Type","targets":2},{"name":"Eta_R_squared","targets":3},{"name":"P_value","targets":4}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item" id="htmlwidget-dc88ed73398b5d96e88f" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-dc88ed73398b5d96e88f">{"x":{"filter":"none","vertical":false,"data":[["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26"],["ventral_photophores","gland_head","chin_barbel","small_teeth","large_teeth","fang_teeth","retractable_teeth","internal_teeth","gill_raker_types","oral_gape_axis","eye_size","orbital_length","gill_outflow","oral_gape_surface","oral_gape_shape","oral_gape_position","lower_jaw_length","head_length","body_depth","pectoral_fin_position","pectoral_fin_insertion","transversal_shape","caudal_throttle_width","dorsal_fin_insertion","eye_position","operculum_volume"],["Categorical","Categorical","Categorical","Categorical","Categorical","Categorical","Categorical","Categorical","Categorical","Categorical","Numeric","Numeric","Numeric","Numeric","Numeric","Numeric","Numeric","Numeric","Numeric","Numeric","Numeric","Numeric","Numeric","Numeric","Numeric","Numeric"],[0.099,0.2,0.07199999999999999,0.344,0.199,0.368,0.034,0.057,0.328,0.194,0.196,0.18,0.018,0.05,0.042,0.001,0.044,0.262,0,0.038,0.258,0.002,0.011,0.004,0.269,0.055],[0.027,0.003,0.051,0,0.003,0,0.128,0.073,0.001,0.008999999999999999,0.004,0.006,0.4,0.158,0.198,0.832,0.189,0.001,0.916,0.221,0.001,0.786,0.509,0.6909999999999999,0.001,0.142]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>Trait<\/th>\n      <th>Type<\/th>\n      <th>Eta_R_squared<\/th>\n      <th>P_value<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"className":"dt-right","targets":[3,4]},{"orderable":false,"targets":0},{"name":" ","targets":0},{"name":"Trait","targets":1},{"name":"Type","targets":2},{"name":"Eta_R_squared","targets":3},{"name":"P_value","targets":4}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
 ```
 
 
