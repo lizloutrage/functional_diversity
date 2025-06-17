@@ -1,0 +1,115 @@
+---
+title: "index"
+author: "Liz Loutrage"
+format:
+  html:
+    code-fold: true
+    self-contained: true
+theme: minty
+keep-md: true
+execute:
+  warning: false
+  message : false
+toc: true
+toc-title: Sections
+toc-location: left
+---
+
+# 1. Workflow 
+- You can use the scroll wheel to zoom in on the graph to view a specific element. 
+```{r}
+#| echo: true
+#| warning: false
+#| label: visnetwork
+library(dplyr)
+targets::tar_visnetwork()
+```
+
+# 2. Data
+- summary of size and number of individuals measured by species 
+```{r}
+#| echo: true
+#| code-fold: true
+#| label: morpho_data_fish
+
+summary_morpho_data <- targets::tar_read(morpho_data) %>%
+  group_by(species) %>%
+  summarise(
+    n = n(),
+    # Convert to cm
+    SL_mean = round(mean(standard_length / 10, na.rm = TRUE), 2),  
+    SL_sd = round(sd(standard_length / 10, na.rm = TRUE), 1),
+    SL_mean_sd = paste0(SL_mean, " ± ", SL_sd)                    
+  ) %>% 
+  select(species, n, SL_mean_sd)
+
+htmltools::tagList(DT::datatable(summary_morpho_data))
+```
+
+
+# 3. Functional spaces 
+- Representation of the functional space on principal coordinates 1 and 2 for the whole community, with vertice species represented by black triangles and non-vertice species by grey dots. 
+
+- The representation of the different depth layers shows the total functional space of the community and the species absent from the depth layer in grey, while the depth functional space and the species present (dots) within it are shown in colour.
+
+```{r}
+#| echo: true
+#| code-fold: true
+#| label: functional_space
+targets::tar_load(functional_space)
+knitr::include_graphics(functional_space)
+```
+
+
+# 4. Standardized effect size 
+
+- The workflow shows how SES has been calculated as a function of the normal or non-normal distribution of the simulated data, and whether the log transformation has permitted a normal distribution.
+
+- To test for significant deviation of SES values from random expectations, the distribution of simulated values of each functional diversity index measured at the sampling station and depth layer level (i.e. richness, divergence, dispersal and evenness) must be symmetric and normally distributed (Botta-Dukát, 2018). Therefore, the distribution of randomly obtained values for each index was tested for normality using the Shapiro-Wilk test, and skewness was assessed to check for symmetry. Assuming a Gaussian distribution, assemblages with SES values greater than 1.96 or less than -1.96 are considered to significantly deviate from random expectations, indicating cases where either environmental filtering or limiting similarity plays a dominant role in shaping the community’s functional composition. When the normality assumption was violated, we log-transformed the simulated indices and used the 97.5% and 2.5% percentiles to test for significant deviations from random expectations.
+
+![Workflow SES](figures/Workflow_SES.png)
+
+- Standardized effect size (SES) values of functional richness, evenness, divergence, and evenness calculated by depth layer. The epipelagic layer is represented in yellow, the upper-mesopelagic layer in red, the lower-mesopelagic layer in purple and the bathypelagic in green
+
+```{r}
+#| echo: true
+#| code-fold: true
+#| label: SES
+
+targets::tar_load(save_plot)
+knitr::include_graphics(save_plot)
+```
+
+# 5. Community biomass-weighted mean  
+
+- Shift in community biomass-weighted mean (CWM) of each trait along the depth gradient. Each point represents the mean of the bootstrapped values in a sampled depth. The boxplots group the values by depth layer: the epipelagic layer in yellow, the upper mesopelagic layer in red, the lower mesopelagic layer in purple and the bathypelagic layer in green
+
+```{r}
+#| echo: true
+#| code-fold: true
+#| label: CWM
+
+targets::tar_load(final_CWM_plot)
+knitr::include_graphics(final_CWM_plot)
+```
+
+- Principal component analysis (PCA) based on the median values of community biomass-weighted mean (CWM) for each trait, with the correlation circle (A) and individual representations (B).
+```{r}
+#| echo: true
+#| code-fold: true
+#| label: CWM_ACP
+
+targets::tar_load(ACP_plot)
+knitr::include_graphics(ACP_plot)
+```
+
+# 6. Functional rarity
+- Relationship between functional uniqueness and geographical restrictiveness of each species. The dashed lines represented the median values of each index at the community level.
+```{r}
+#| echo: true
+#| code-fold: true
+#| label: functional_rarity
+
+targets::tar_load(functional_rarity)
+knitr::include_graphics(functional_rarity)
+```

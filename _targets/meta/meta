@@ -1,0 +1,38 @@
+name|type|data|command|depend|seed|path|time|size|bytes|format|repository|iteration|parent|children|seconds|warnings|error
+fish_traits_cat|stem|288168afc8a7af3e|a0ac34e6699052f2|2c530c1562a7fbd1|-1554199989||t20252.5800453174s|s400b|400|rds|local|vector|||0.86||
+data_biomass_2002_2019|stem|f566e223974fece9|19eacb70ec8c328a|b798f6bd05e9502f|-835463724||t20255.4992851039s|s3985b|3985|rds|local|vector|||0.47||
+data_biomass_2021_2022|stem|abaedfb3a6a07ec1|d6c17d8ad9577fc2|b798f6bd05e9502f|2062789268||t20255.4992883462s|s1819b|1819|rds|local|vector|||0.18|There was 1 warning in `mutate()`. ℹ In argument: `biomass_sp = as.numeric(biomass_sp)`. Caused by warning: ! NAs introduits lors de la conversion automatique|
+depth_fish_biomass|stem|28674b558fd63311|95ecbd3bf05812da|d5589e6a9c5f9837|1752343785||t20255.4992892438s|s1742b|1742|rds|local|vector|||0.06||
+dbFD_result_sim_list|stem||9f7e0864c4cf3e2e|db502f73a666af65|1942067897||t20255.5153786212s||0|rds|local|vector|||0.03||impossible de trouver la fonction 'randomize_traits'
+morpho_data|stem|441277cbe72c995e|ad5cd036d0820923|2c530c1562a7fbd1|-1374863338||t20256.3184037352s|s35421b|35421|rds|local|vector|||0.86||
+cat_morpho|stem|1f2cd7c139772cdc|b684c18d09ebf6e4|6f3f9ff63fdda43c|121922708||t20256.3184043324s|s982b|982|rds|local|vector|||0.02||
+original_data|stem|3399413381f83f1e|cc2dc347507cc090|6f3f9ff63fdda43c|2119390579||t20256.3184048773s|s34708b|34708|rds|local|vector|||0||
+imputation|stem|dcbc9578145abff2|92ef3e26692ac020|ccc009ab48068022|-1065611579||t20256.3185986206s|s84435b|84435|rds|local|vector|||16.72|Number of logged events: 3|
+imputed_data|stem|65f3e437b8dd9db7|2ae81e1dc8ad1464|8a57982c41d1f3f1|-1867465057||t20256.318598913s|s34735b|34735|rds|local|vector|||0||
+numeric_traits|stem|96dcd139111828d4|cbaf6274b41e9109|4da930102e440b97|-2009743931||t20256.3189153885s|s6064b|6064|rds|local|vector|||0.21|There was 1 warning in `summarise()`. ℹ In argument: `across(everything(), mean, na.rm = TRUE)`. ℹ In group 1: `species = 'Anoplogaster_cornuta'`. Caused by warning: ! The `...` argument of `across()` is deprecated as of dplyr 1.1.0. Supply arguments directly to `.fns` through an anonymous function instead.    # Previously   across(a:b, mean, na.rm = TRUE)    # Now   across(a:b, \(x) mean(x, na.rm = TRUE))|
+fish_traits|stem|b56697ed3d5d09ec|89d85f50a519678e|c37e735d2f6c83c5|-288240080||t20256.3189160621s|s6386b|6386|rds|local|vector|||0.02||
+sp_names|stem|38c8ed0f07cdd5f1|86cc5a26b4ea7d8c|1cb0c12589de842b|-374615851||t20256.318916397s|s595b|595|rds|local|vector|||0||
+sp_dist_fish|stem|1051769303b0207b|a3315f0d8997a1f9|5b194251076b3617|148654135||t20256.3189225898s|s112289b|112289|rds|local|vector|||0.51||
+fspaces_quality_fish|stem|dff5be62db8ea80b|0f58fac5ba367f27|fa504e8da5869caf|1237232492||t20256.3189234984s|s220357b|220357|rds|local|vector|||0.05||
+data_CWM|stem|713b0debc8ed4495|79ed0ba8b92a6c27|35d6596b7c2bd1ac|-336868566||t20256.3281029805s|s100617b|100617|rds|local|vector|||0.17|`funs()` was deprecated in dplyr 0.8.0. ℹ Please use a list of either functions or lambdas:  # Simple named list: list(mean = mean, median = median)  # Auto named with `tibble::lst()`: tibble::lst(mean, median)  # Using lambdas list(~ mean(., trim = .2), ~ median(., na.rm = TRUE))|
+sp_faxes_coord_fish|stem|2eb6c1ef1f1d3289|1753508df31e14a6|7911f1cfd2b71683|-35738755||t20256.3281032768s|s4004b|4004|rds|local|vector|||0||
+dbFD_result_sim|stem|f2ed7f25db0b1baf|b8ace2384a4ce0f2|f0c2f3d3d663be82|-882603017||t20256.331063727s|s122973b|122973|rds|local|vector|||255.73||
+functional_space|stem|3e40947bd3acdd1f|01bf2bde2e493f0d|e49d1f3ad6c0acb2|498801745||t20256.331441933s|s80b|80|rds|local|vector|||2.84||
+SES_combined|stem|4ee92f761633930e|71c2ed872acba30e|1f5f0a4e1fd6f15e|1904202968||t20256.3314506098s|s375b|375|rds|local|vector|||0.7|Returning more (or less) than 1 row per `summarise()` group was deprecated in dplyr 1.1.0. ℹ Please use `reframe()` instead. ℹ When switching from `summarise()` to `reframe()`, remember that `reframe()`   always returns an ungrouped data frame and adjust accordingly.|
+plot_SES_fig|stem|fd60666b4190d9bc|99089b6194632cd7|0fcdee9b0a793278|-262506347||t20256.3315192489s|s165498b|165498|rds|local|vector|||0.05|Using `size` aesthetic for lines was deprecated in ggplot2 3.4.0. ℹ Please use `linewidth` instead.|
+save_plot|stem|434bf01c52fc3df6|0668256696dad193|81523bd08d2aa91b|-1898771178||t20256.3315279815s|s72b|72|rds|local|vector|||0.72||
+CWM_results|stem|9ed40e3cf0d2f5d5|882a7b8440b54309|bc46fda7a0da2c6d|231109393||t20256.3444409943s|s2695462b|2695462|rds|local|vector|||65.53||
+final_CWM_plot|stem|9a03bdf7f79eb8ec|e3a4692c2cbd9a43|a8e9b3614c5650ff|450867418||t20256.3445868245s|s76b|76|rds|local|vector|||12.36||
+ACP_plot|stem|4de8fbe9df633a3c|40e0bdb84cb2d1dc|395a45cff0a00ac9|-2044191739||t20256.3486046207s|s71b|71|rds|local|vector|||5.06||
+randomize_traits|function|2a3a1ddb5b62dbd8
+ACP_function|function|b4c3afa08e5ae31c
+CWM_calcul|function|09f6cfbdb27bd1f2
+functional_space_plot|function|664c759bc528d75d
+calcul_functional_ri|function|459e025d81aed127
+format_data_CWM|function|e4ff9c773c01c690
+plot_CWM|function|c05843b6b0340a52
+plot_SES|function|26a6a900a4001933
+compute_SES|function|63c32fa48857718a
+run_simulations|function|d5269455a2f592bc
+taxonomic_families|stem|47b34082bd1a5462|2e5b8b5472a15d49|b798f6bd05e9502f|1910465706||t20256.3598726434s|s907b|907|rds|local|vector|||0.03||
+functional_rarity|stem|a2064e2408e742b8|7edbf888b58908bd|3fd3b3a23b4dcd8d|1831971686||t20256.3599397492s|s77b|77|rds|local|vector|||5.67||
